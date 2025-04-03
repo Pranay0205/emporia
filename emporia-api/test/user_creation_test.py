@@ -25,7 +25,8 @@ def test_user_creation():
         "email": "john.doe@example.com",
         "password": "securepassword",
         "address": "123 Main St, Springfield, USA",
-        "role": "customer"
+        "role": "customer",
+        "phone_number": "+1234567890",
     }
     admin_data = {
         "id": 2,

@@ -10,5 +10,5 @@ def register_all_user_types():
         id, first_name, last_name, user_name, email, password, role, admin_id, permissions))
     UserFactory.register_user_type('seller', lambda id, first_name, last_name, user_name, email, password, role, seller_id, store_name, store_desc: Seller(
         id, first_name, last_name, user_name, email, password, role, seller_id, store_name, store_desc))
-    UserFactory.register_user_type('customer', lambda id, first_name, last_name, user_name, email, password, role, customer_id, address: Customer(
-        id, first_name, last_name, user_name, email, password, role, customer_id, address))
+    UserFactory.register_user_type('customer', lambda id, first_name, last_name, user_name, email, password, role, customer_id, address, phone_number: Customer(
+        id, first_name, last_name, user_name, email, password, role, customer_id, address, phone_number))
