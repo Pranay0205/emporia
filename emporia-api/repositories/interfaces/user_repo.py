@@ -1,12 +1,10 @@
 from abc import abstractmethod
 
-
 class UserRepository:
     def __init__(self, db):
         self.db = db
-        self.cursor = db.cursor
-        self.connection = db.connection 
-        
+      
+    
     @abstractmethod
     def get_all(self):
         """

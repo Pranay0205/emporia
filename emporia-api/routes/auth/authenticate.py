@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from factory.UserFactory import UserFactory
+from services.user_services import UserService
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -10,14 +10,17 @@ def register():
         data = request.get_json()
         if not data:
             return jsonify({'message': 'No data provided'}), 400
-
-        user = UserFactory.create_user(data['user_type'], **data)
-
-        print(f"User created: {user}")
-
+        
+        
+        
+    
     else:
         return jsonify({'message': 'GET method not allowed for this endpoint'}), 405
-      
+    
+    
+#@auth_bp.route('/login', methods=['POST'])  # User login
+
+#@auth_bp.route('/logout', methods=['POST'])  # User logout
       
 # write a test case for the register function
 
