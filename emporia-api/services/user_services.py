@@ -4,6 +4,7 @@ from flask import jsonify
 from factories.UserFactory.UserFactory import UserFactory
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
+from models.Users.User import User
 import hashlib
 
 
@@ -33,8 +34,28 @@ class UserService:
             
     except Exception as e:
       raise ValueError(f"{str(e)}")
-        
+    
+  def get_all_users(self):
+      users = self.user_repository.get_all_users()
       
+      user_json_array = []
+      
+      for user_data in users:
+        # Extract fields from the array
+          id = user_data[0]
+          user_name = user_data[1]
+          first_name = user_data[2]
+          last_name = user_data[3]
+          email = user_data[4]
+          role = user_data[6]
+          
+          user = User(id, first_name, last_name, user_name, email, None, role)
+          user_json_array.append(user.to_json())
+      
+      return user_json_array
+      
+      
+  
   
   def authenticate_user(self, username, password):
       pass

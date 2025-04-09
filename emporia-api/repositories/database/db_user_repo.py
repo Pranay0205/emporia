@@ -15,21 +15,21 @@ class DBUserRepo(UserRepository):
             """, (user.user_name, user.first_name, user.last_name, 
                   user.email, user.password, user.role))
             
-            user_id = self.cursor.lastrowid
+            user.id = self.cursor.lastrowid
             
             # Handle role-specific data
             if user.role == 'customer':
                 self.cursor.execute("""
                     INSERT INTO customers (user_id, address, phone_number)
                     VALUES (%s, %s, %s)
-                """, (user_id, user.address, user.phone_number))  # Use user_id, not user.id
+                """, (user.id, user.address, user.phone_number))  # Use user_id, not user.id
                 user.customer_id = self.cursor.lastrowid
             
             elif user.role == 'seller':
                 self.cursor.execute("""
                     INSERT INTO sellers (user_id, store_name, store_desc)
                     VALUES (%s, %s, %s)
-                """, (user_id, user.store_name, user.store_desc))  # Use user_id, not user.id
+                """, (user.id, user.store_name, user.store_desc))  # Use user_id, not user.id
                 
                 user.seller_id = self.cursor.lastrowid
                 
@@ -40,7 +40,7 @@ class DBUserRepo(UserRepository):
                 self.cursor.execute("""
                     INSERT INTO admins (user_id, permissions)
                     VALUES (%s, %s)
-                """, (user_id, permissions_str))  # Use user_id, not user.id
+                """, (user.id, permissions_str))  # Use user_id, not user.id
                 
                 user.admin_id = self.cursor.lastrowid
                     
@@ -78,3 +78,19 @@ class DBUserRepo(UserRepository):
             self.connection.rollback()
             print(f"Unexpected error: {e}")
             raise Exception(f"User creation failed: {e}")
+        
+    
+    def get_all_users(self, limit=100, offset=0):
+        try:
+            self.cursor.execute("""
+                SELECT id, username, first_name, last_name, email, password, role 
+                FROM users
+                LIMIT %s OFFSET %s
+            """, (limit, offset))
+            
+            users = self.cursor.fetchall()
+            print(f"Fetched {len(users)} users from the database.")
+                            
+            return users
+        except Exception as e:
+            raise ValueError(f"Error fetching users: {e}")

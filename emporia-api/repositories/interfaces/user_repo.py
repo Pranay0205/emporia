@@ -5,7 +5,7 @@ class UserRepository:
         self.db = db
       
     @abstractmethod
-    def get_all(self):
+    def get_all_users(self):
         """
         Fetch all users from the database.
         """
