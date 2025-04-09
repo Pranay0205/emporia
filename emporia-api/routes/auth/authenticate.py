@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, request, jsonify
+from flask import Blueprint, current_app, request, jsonify, session
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -26,7 +26,7 @@ def login():
         return jsonify({'message': 'No data provided'}), 400
     try:
         is_authenticated, user = current_app.user_service.authenticate_user(data["username"], data["password"])
-        
+        print("Session after authentication:", session)
         if not is_authenticated:
             raise ValueError("Invalid username or password")
                 
@@ -37,8 +37,12 @@ def login():
         return jsonify({'message': 'Login failed',
                         'error': str(e)}), 500
 
-#@auth_bp.route('/logout', methods=['POST'])  # User logout
-      
+@auth_bp.route('/logout', methods=['POST'])  # User logout
+def logout():
+    """User logout"""
+    print("Session before clearing:", session)
+    session.clear()
+    return jsonify({'message': 'Logout successful'}), 200   
 # write a test case for the register function
 
 

@@ -1,13 +1,18 @@
 import re
-from flask import request
+from flask import config, request
 from flask import Flask
 from reg import User_Registry
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
 from services.user_services import UserService
 from routes import register_blueprints
+import configparser
 
 app = Flask(__name__)
+config = configparser.ConfigParser()
+config.read('configs/config.ini')
+app.secret_key = config['server']['secret_key']
+
 
 if __name__ == '__main__':
     print("Starting the Flask app...")
