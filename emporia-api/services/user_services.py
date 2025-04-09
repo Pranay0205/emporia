@@ -42,33 +42,78 @@ class UserService:
       
       for user_data in users:
         # Extract fields from the array
-          id = user_data[0]
-          user_name = user_data[1]
-          first_name = user_data[2]
-          last_name = user_data[3]
-          email = user_data[4]
-          role = user_data[6]
+          user = self._convert_array_to_user(user_data)
           
-          user = User(id, first_name, last_name, user_name, email, None, role)
           user_json_array.append(user.to_json())
       
       return user_json_array
+    
+    
+  def _convert_array_to_user(self, user_data):
+    try:
+      
+      if not user_data:
+          return None
+
+      user = User(
+          id=user_data[0],
+          first_name=user_data[1],
+          last_name=user_data[2],
+          user_name=user_data[3],
+          email=user_data[4],
+          password=user_data[5],
+          role=user_data[6]
+      )
+      return user
+    
+    except Exception as e:
+      raise ValueError(f"Failed to convert array to user: {str(e)}")
+
       
       
   
   
   def authenticate_user(self, username, password):
-      pass
-      # Get user from repository
-      # Verify password
-      # Generate token
-      # return token
       
-  def update_user(self, user_id, user_data):
-      pass
-      # Check what fields are allowed to be updated
-      # Update user via repository
-      # return updated_user
+      # Get user from repository
+      is_authenticated = False
+      try:
+        if username == None or password == None:
+            raise ValueError("Username and password cannot be None")
+          
+        if username == "" or password == "":
+            raise ValueError("Username and password cannot be empty")
+          
+        raw_user = self.user_repository.get_user_by_username(username)
+        if not raw_user:
+            raise ValueError("User not found")
+          
+        user = self._convert_array_to_user(raw_user)
+      
+        # Hash the provided password
+        hashed_password = hashlib.sha256(password.encode("utf-8")).hexdigest()
+        
+        # Verify password
+        if user.password != hashed_password:
+            raise ValueError("Invalid password")
+        else:
+            is_authenticated = True
+        
+      
+        return is_authenticated, user.to_json()
+      
+      except ValueError as e:
+        raise ValueError(f"DJlkfjsdkljflk: {str(e)}")
+      except Exception as e:
+        raise ValueError(f"Authentication failed: {str(e)}")
+      
+
+      
+  def get_user(self, username):
+      user = self.user_repository.get_user_by_username(username)
+      if not user:
+          raise ValueError("User not found")
+      return user
       
   def _validate_user(self, user_data):          
     required_fields = ["role", "first_name", "user_name", "email", "password"]

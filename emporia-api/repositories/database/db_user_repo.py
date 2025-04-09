@@ -94,3 +94,22 @@ class DBUserRepo(UserRepository):
             return users
         except Exception as e:
             raise ValueError(f"Error fetching users: {e}")
+        
+    def get_user_by_username(self, username):
+        try:
+            self.cursor.execute("""
+                SELECT id, username, first_name, last_name, email, password, role 
+                FROM users 
+                WHERE username = %s
+            """, (username,))
+            
+            user = self.cursor.fetchone()
+            
+            if user:
+                print(f"User {username} found in the database.")
+                return user
+            else:
+                print(f"User {username} not found in the database.")
+                return None
+        except Exception as e:
+            raise ValueError(f"Error fetching user by username: {e}")

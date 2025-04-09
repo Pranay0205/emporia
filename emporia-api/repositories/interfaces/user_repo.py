@@ -19,7 +19,7 @@ class UserRepository:
         pass
       
     @abstractmethod
-    def get_by_username(self, username):
+    def get_user_by_username(self, username):
         """
         Fetch a user by their username from the database.
         """
