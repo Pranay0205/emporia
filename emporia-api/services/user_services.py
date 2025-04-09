@@ -28,13 +28,12 @@ class UserService:
     
       # Create user
       user = self.user_repository.create(user)
-      
-      # Send welcome email
-      print(f"{user.first_name} user is created! Welcome!")
+    
       return user.id
             
-    except Exception as error:
-        print(f"{error}")
+    except Exception as e:
+      raise ValueError(f"{str(e)}")
+        
       
   
   def authenticate_user(self, username, password):
@@ -56,18 +55,22 @@ class UserService:
     for field in required_fields:
       if field not in user_data:
         raise ValueError(f"Missing required field: {field}")
+
+    if not re.match(r"^[A-Za-z]+$", user_data['first_name']):
+      raise ValueError("First name can only contain letters")
+        
+    if not re.match(r"^[A-Za-z]+$", user_data['last_name']):
+      raise ValueError("Last name can only contain letters")
       
+    if not re.match(r"^[A-Za-z0-9_]+$", user_data['user_name']):
+      raise ValueError("Username can only contain letters, numbers, and underscores")
+        
     if not re.match(r"[^@]+@[^@]+\.[^@]+", user_data['email']):
         raise ValueError("Invalid email format")
     
-    # Password strength validation
-    
-    if 'password' in user_data:
-      if len(user_data['password']) < 8:
+    if len(user_data['password']) < 8:
         raise ValueError("Password must be at least 8 characters")
-    else:
-        raise ValueError("Password is required")
-      
+
     # Role-specific validations
     
     # Customer

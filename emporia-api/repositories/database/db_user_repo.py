@@ -45,6 +45,9 @@ class DBUserRepo(UserRepository):
                 user.admin_id = self.cursor.lastrowid
                     
             self.connection.commit()
+            
+            print(f"{user.first_name} has joined the {user.role} community!")
+            
             return user
         
         except mysql.connector.Error as err:
