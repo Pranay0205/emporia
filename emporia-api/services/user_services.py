@@ -1,6 +1,6 @@
 from multiprocessing import Value
 import re
-from flask import jsonify
+from flask import jsonify, session
 from factories.UserFactory.UserFactory import UserFactory
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
@@ -89,7 +89,7 @@ class UserService:
             raise ValueError("User not found")
           
         user = self._convert_array_to_user(raw_user)
-      
+
         # Hash the provided password
         hashed_password = hashlib.sha256(password.encode("utf-8")).hexdigest()
         
@@ -98,8 +98,10 @@ class UserService:
             raise ValueError("Invalid password")
         else:
             is_authenticated = True
-        
-      
+            session['is_authenticated'] = True
+            session['role'] = user.role
+            session['user_id'] = user.id
+            
         return is_authenticated, user.to_json()
       
       except ValueError as e:
