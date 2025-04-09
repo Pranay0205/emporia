@@ -4,7 +4,6 @@ class UserRepository:
     def __init__(self, db):
         self.db = db
       
-    
     @abstractmethod
     def get_all(self):
         """

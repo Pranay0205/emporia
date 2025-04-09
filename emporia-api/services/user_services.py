@@ -1,7 +1,7 @@
 from multiprocessing import Value
 import re
 from flask import jsonify
-from factories import UserFactory
+from factories.UserFactory.UserFactory import UserFactory
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
 import hashlib
@@ -16,24 +16,21 @@ class UserService:
     try:
       # Validate user data
       self._validate_user(user_data)
-      
-      user = UserFactory.create_user(user_data['role'], **user_data)
+
+      # Create a factory instance
+      user_factory = UserFactory()
+
+      # Create a user
+      user = user_factory.create_user(user_data["role"], **user_data)
            
       # Hash password
-      user.password = hashlib.sha256(user.password.encode("utf-8")) 
+      user.password = hashlib.sha256(user.password.encode("utf-8")).hexdigest() 
     
+      # Create user
+      user = self.user_repository.create(user)
+      
       # Send welcome email
       print(f"{user.first_name} user is created! Welcome!")
-
-      # Create db connection
-      db = DatabaseConnection()
-      
-      # Create User Repo
-      # user_repo = DBUserRepo(db)
-      
-      # # Create user
-      # user = self.user_repository.create(user)
-      
       return user.id
             
     except Exception as error:
@@ -54,7 +51,7 @@ class UserService:
       # return updated_user
       
   def _validate_user(self, user_data):          
-    required_fields = ["user_type", "first_name", "user_name", "email", "password"]
+    required_fields = ["role", "first_name", "user_name", "email", "password"]
     
     for field in required_fields:
       if field not in user_data:
@@ -78,7 +75,7 @@ class UserService:
         if 'address' not in user_data:
           raise ValueError("Address is required for customers")
       
-        if 'phone' not in user_data:
+        if 'phone_number' not in user_data:
           raise ValueError("Phone is required for customers")    
       
     # Seller
@@ -90,7 +87,7 @@ class UserService:
         raise ValueError("Store Description is required for sellers")
         
     # Admin
-    if user_data['permissions'] == 'admin': 
+    if user_data['role'] == 'admin': 
       if 'permissions' not in user_data:
         raise ValueError("Permissions are required for admins")
 
