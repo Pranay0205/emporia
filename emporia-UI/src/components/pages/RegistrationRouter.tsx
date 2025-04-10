@@ -18,15 +18,6 @@ import {
 import { useForm } from "react-hook-form";
 
 // Common form fields for all user types
-interface BaseFormValues {
-  first_name: string;
-  last_name: string;
-  user_name: string;
-  email: string;
-  password: string;
-  role: "customer" | "seller";
-}
-
 interface FormValues {
   first_name: string;
   last_name: string;
