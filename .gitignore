@@ -11,3 +11,5 @@ __pycache__/
 
 # Ignore configs
 configs/
+emporia-UI/package-lock.json
+emporia-UI/package.json
