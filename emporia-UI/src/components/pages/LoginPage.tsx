@@ -9,7 +9,6 @@ import {
   Box,
   Heading,
   Text,
-  Link,
 } from "@chakra-ui/react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useForm } from "react-hook-form";
@@ -22,21 +21,45 @@ interface FormValues {
 
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
-
+  const [error, setError] = useState("");
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>();
 
-  const onSubmit = handleSubmit((data) => {
-    setIsLoading(true);
-    // Simulate API call
-    console.log(data);
-    setTimeout(() => {
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      setIsLoading(true);
+      // Make API call to login endpoint
+      const response = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: data.username,
+          password: data.password,
+        }),
+        credentials: "include", // Needed for cookies if your API uses sessions
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const responseData = await response.json();
+      console.log("Login successful:", responseData);
+
+      // Redirect to dashboard or home page after successful login
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Login error:", error);
+      // Here you would handle errors, e.g., show a toast notification
+    } finally {
       setIsLoading(false);
-      // Here you would handle the login response
-    }, 1000);
+    }
   });
 
   return (

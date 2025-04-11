@@ -7,11 +7,13 @@ from repositories.database.db_user_repo import DBUserRepo
 from services.user_services import UserService
 from routes import register_blueprints
 import configparser
+from flask_cors import CORS
 
 app = Flask(__name__)
 config = configparser.ConfigParser()
 config.read('configs/config.ini')
 app.secret_key = config['server']['secret_key']
+CORS(app, supports_credentials=True)
 
 
 if __name__ == '__main__':

@@ -54,7 +54,8 @@ const calculatePasswordStrength = (password: string) => {
 
 const RegistrationRouter = () => {
   const [userRole, setUserRole] = useState<"customer" | "seller">("customer");
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const {
     register,
     handleSubmit,
@@ -64,11 +65,66 @@ const RegistrationRouter = () => {
 
   const password = watch("password");
 
-  const onSubmit = handleSubmit((data) => {
-    // Add role to the data
-    const formData = { ...data, role: userRole };
-    console.log(formData);
-    // Here you would send the data to your API
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      // Format the data according to your API requirements
+      const formData = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        user_name: data.user_name,
+        email: data.email,
+        password: data.password,
+        role: userRole,
+        // For customer specific fields
+        ...(userRole === "customer" && {
+          address: data.address,
+          phone_number: data.phone_number,
+          customer_id: 1, // This might need to be generated or handled by your backend
+        }),
+        // For seller specific fields
+        ...(userRole === "seller" && {
+          store_name: data.store_name,
+          store_desc: data.store_desc,
+          seller_id: 1, // This might need to be generated or handled by your backend
+        }),
+        id: Math.floor(Math.random() * 1000), // Generate a random ID for testing, your backend should handle this
+      };
+
+      console.log("Submitting registration data:", formData);
+
+      // Make API call to register endpoint
+      const response = await fetch("http://localhost:5000/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      console.log("Response status:", response.status);
+      const responseData = await response.json();
+      console.log("Response data:", responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Registration failed");
+      }
+
+      console.log("Registration successful:", responseData);
+      // Redirect to login page after successful registration
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Registration error:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Registration failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   });
 
   return (
