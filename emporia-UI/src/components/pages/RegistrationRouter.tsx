@@ -146,7 +146,7 @@ const RegistrationRouter = () => {
         {/* Logo Section */}
         <Box mb="8" textAlign="center">
           <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
-            EMPORIA
+            <Link to="/">EMPORIA</Link>
           </Heading>
           <Text mt="2" fontSize="md" color="gray.400">
             Your One-Stop Shopping Platform
