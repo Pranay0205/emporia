@@ -16,6 +16,7 @@ import {
   PasswordStrengthMeter,
 } from "@/components/ui/password-input";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 // Common form fields for all user types
 interface FormValues {
@@ -79,6 +80,15 @@ const RegistrationRouter = () => {
       px="4"
     >
       <Box maxW="500px" w="100%" p="6" boxShadow="lg" rounded="md" bg="black">
+        {/* Logo Section */}
+        <Box mb="8" textAlign="center">
+          <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
+            EMPORIA
+          </Heading>
+          <Text mt="2" fontSize="md" color="gray.400">
+            Your One-Stop Shopping Platform
+          </Text>
+        </Box>
         <Heading size="lg" mb="6" textAlign="center">
           Create an Account
         </Heading>
@@ -246,6 +256,14 @@ const RegistrationRouter = () => {
             </Button>
           </Stack>
         </form>
+        <Box mt="4" textAlign="center">
+          <Text fontSize="sm">
+            Don't have an account?{" "}
+            <Link to="/login" style={{ color: "blue.500" }}>
+              Login here
+            </Link>
+          </Text>
+        </Box>
       </Box>
     </Box>
   );
