@@ -10,6 +10,8 @@ import {
   Heading,
   Text,
   Textarea,
+  Flex,
+  HStack,
 } from "@chakra-ui/react";
 import {
   PasswordInput,
@@ -26,6 +28,7 @@ interface FormValues {
   user_name: string;
   email: string;
   password: string;
+  confirmPassword: string;
   role: "customer" | "seller";
   // Customer fields
   address?: string;
@@ -65,6 +68,7 @@ const RegistrationRouter = () => {
   } = useForm<FormValues>();
 
   const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -129,156 +133,150 @@ const RegistrationRouter = () => {
   });
 
   return (
-    
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      minH="100vh"
+      px="4"
+      my="24"
+    >
+      <AuthBackground />
       <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        minH="100vh"
-        px="4"
+        maxW="800px"
+        w="100%"
+        p="6"
+        boxShadow="lg"
+        rounded="md"
+        bg="gray.950"
       >
-        <AuthBackground/>
-        <Box
-          maxW="500px"
-          w="100%"
-          p="6"
-          boxShadow="lg"
-          rounded="md"
-          bg="gray.950"
-        >
-          {/* Logo Section */}
-          <Box mb="8" textAlign="center">
-            <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
-              <Link to="/">EMPORIA</Link>
-            </Heading>
-            <Text mt="2" fontSize="md" color="gray.400">
-              Your One-Stop Shopping Platform
-            </Text>
-          </Box>
-          <Heading size="lg" mb="6" textAlign="center">
-            Create an Account
+        {/* Logo Section */}
+        <Box mb="4" textAlign="center">
+          <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
+            <Link to="/">EMPORIA</Link>
           </Heading>
+          <Text mt="2" fontSize="md" color="gray.400">
+            Your One-Stop Shopping Platform
+          </Text>
+        </Box>
+        <Heading size="lg" mb="2" textAlign="center">
+          Create an Account
+        </Heading>
 
-          <Box mb="6">
-            <Text mb="2" fontWeight="medium" color="white">
-              Register as:
-            </Text>
-            <Stack direction="row" gap="4">
-              <Button
-                colorScheme={userRole === "customer" ? "blue" : "gray"}
-                variant={userRole === "customer" ? "solid" : "outline"}
-                flex="1"
-                onClick={() => setUserRole("customer")}
-                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                transition="all 0.2s"
-              >
-                Customer
-              </Button>
-              <Button
-                colorScheme={userRole === "seller" ? "blue" : "gray"}
-                variant={userRole === "seller" ? "solid" : "outline"}
-                flex="1"
-                onClick={() => setUserRole("seller")}
-                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                transition="all 0.2s"
-              >
-                Seller
-              </Button>
-            </Stack>
-          </Box>
+        {/* Role Selection */}
+        <Box mb="8">
+          <Text mb="4" fontWeight="medium" color="white" textAlign="center">
+            Register As
+          </Text>
+          <HStack 
+            justify="center" 
+            gap="2" 
+            maxW="400px" 
+            mx="auto"
+          >
+            <Button
+              colorScheme="teal"
+              variant={userRole === "customer" ? "solid" : "outline"}
+              size="lg"
+              w="150px"
+              onClick={() => setUserRole("customer")}
+              _hover={{ 
+                transform: "translateY(-2px)", 
+                boxShadow: "lg",
+                bg: userRole === "customer" ? "teal.600" : "whiteAlpha.200" 
+              }}
+              transition="all 0.2s"
+              borderWidth={2}
+            >
+              Customer
+            </Button>
+            <Button
+              colorScheme="teal"
+              variant={userRole === "seller" ? "solid" : "outline"}
+              size="lg"
+              w="150px"
+              onClick={() => setUserRole("seller")}
+              _hover={{ 
+                transform: "translateY(-2px)", 
+                boxShadow: "lg",
+                bg: userRole === "seller" ? "teal.600" : "whiteAlpha.200"
+              }}
+              transition="all 0.2s"
+              borderWidth={2}
+            >
+              Seller
+            </Button>
+          </HStack>
+          <Flex align="center" my="6">
+            <Box flex="1" h="1px" bg="gray.600" />
+          </Flex>
+        </Box>
 
-          <form onSubmit={onSubmit}>
-            <Stack gap="4" align="stretch">
-              {/* Common Fields for Both User Types */}
-              <Field.Root invalid={!!errors.first_name}>
-                <Field.Label>First Name</Field.Label>
-                <Input
-                  {...register("first_name", {
-                    required: "First name is required",
-                    pattern: {
-                      value: /^[A-Za-z]+$/,
-                      message: "First name can only contain letters",
-                    },
-                  })}
-                />
-                <Field.ErrorText>{errors.first_name?.message}</Field.ErrorText>
-              </Field.Root>
+        <form onSubmit={onSubmit}>
+          <Stack direction={{ base: "column", md: "row" }} gap="6" align="flex-start">
+            {/* Left Column */}
+            <Box flex="1" w="100%">
+              <Stack gap="4">
+                <Field.Root invalid={!!errors.first_name}>
+                  <Field.Label>First Name</Field.Label>
+                  <Input
+                    {...register("first_name", {
+                      required: "First name is required",
+                      pattern: {
+                        value: /^[A-Za-z]+$/,
+                        message: "First name can only contain letters",
+                      },
+                    })}
+                  />
+                  <Field.ErrorText>{errors.first_name?.message}</Field.ErrorText>
+                </Field.Root>
 
-              <Field.Root invalid={!!errors.last_name}>
-                <Field.Label>Last Name</Field.Label>
-                <Input
-                  {...register("last_name", {
-                    required: "Last name is required",
-                    pattern: {
-                      value: /^[A-Za-z]+$/,
-                      message: "Last name can only contain letters",
-                    },
-                  })}
-                />
-                <Field.ErrorText>{errors.last_name?.message}</Field.ErrorText>
-              </Field.Root>
+                <Field.Root invalid={!!errors.user_name}>
+                  <Field.Label>Username</Field.Label>
+                  <Input
+                    {...register("user_name", {
+                      required: "Username is required",
+                      pattern: {
+                        value: /^[A-Za-z0-9_]+$/,
+                        message:
+                          "Username can only contain letters, numbers, and underscores",
+                      },
+                    })}
+                  />
+                  <Field.ErrorText>{errors.user_name?.message}</Field.ErrorText>
+                </Field.Root>
 
-              <Field.Root invalid={!!errors.user_name}>
-                <Field.Label>Username</Field.Label>
-                <Input
-                  {...register("user_name", {
-                    required: "Username is required",
-                    pattern: {
-                      value: /^[A-Za-z0-9_]+$/,
-                      message:
-                        "Username can only contain letters, numbers, and underscores",
-                    },
-                  })}
-                />
-                <Field.ErrorText>{errors.user_name?.message}</Field.ErrorText>
-              </Field.Root>
+                <Field.Root invalid={!!errors.password}>
+                  <Field.Label>Password</Field.Label>
+                  <PasswordInput
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 8,
+                        message: "Password must be at least 8 characters",
+                      },
+                    })}
+                  />
+                  <PasswordStrengthMeter
+                    width="100%"
+                    value={calculatePasswordStrength(password || "")}
+                  />
+                  <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
+                </Field.Root>
 
-              <Field.Root invalid={!!errors.email}>
-                <Field.Label>Email</Field.Label>
-                <Input
-                  type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[^@]+@[^@]+\.[^@]+$/,
-                      message: "Invalid email format",
-                    },
-                  })}
-                />
-                <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
-              </Field.Root>
+                <Field.Root invalid={!!errors.confirmPassword}>
+                  <Field.Label>Confirm Password</Field.Label>
+                  <PasswordInput
+                    {...register("confirmPassword", {
+                      required: "Please confirm your password",
+                      validate: (value) =>
+                        value === password || "Passwords do not match",
+                    })}
+                  />
+                  <Field.ErrorText>{errors.confirmPassword?.message}</Field.ErrorText>
+                </Field.Root>
 
-              <Field.Root invalid={!!errors.password}>
-                <Field.Label>Password</Field.Label>
-                <PasswordInput
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 8,
-                      message: "Password must be at least 8 characters",
-                    },
-                  })}
-                />
-                <PasswordStrengthMeter
-                  width="100%"
-                  value={calculatePasswordStrength(password || "")}
-                />
-                <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
-              </Field.Root>
-
-              {/* Conditional Fields Based on User Role */}
-              {userRole === "customer" && (
-                <>
-                  <Field.Root invalid={!!errors.address}>
-                    <Field.Label>Address</Field.Label>
-                    <Input
-                      {...register("address", {
-                        required: "Address is required for customers",
-                      })}
-                    />
-                    <Field.ErrorText>{errors.address?.message}</Field.ErrorText>
-                  </Field.Root>
-
+                {userRole === "customer" && (
                   <Field.Root invalid={!!errors.phone_number}>
                     <Field.Label>Phone Number</Field.Label>
                     <Input
@@ -290,11 +288,9 @@ const RegistrationRouter = () => {
                       {errors.phone_number?.message}
                     </Field.ErrorText>
                   </Field.Root>
-                </>
-              )}
+                )}
 
-              {userRole === "seller" && (
-                <>
+                {userRole === "seller" && (
                   <Field.Root invalid={!!errors.store_name}>
                     <Field.Label>Store Name</Field.Label>
                     <Input
@@ -306,7 +302,55 @@ const RegistrationRouter = () => {
                       {errors.store_name?.message}
                     </Field.ErrorText>
                   </Field.Root>
+                )}
+              </Stack>
+            </Box>
 
+            {/* Right Column */}
+            <Box flex="1" w="100%">
+              <Stack gap="4">
+                <Field.Root invalid={!!errors.last_name}>
+                  <Field.Label>Last Name</Field.Label>
+                  <Input
+                    {...register("last_name", {
+                      required: "Last name is required",
+                      pattern: {
+                        value: /^[A-Za-z]+$/,
+                        message: "Last name can only contain letters",
+                      },
+                    })}
+                  />
+                  <Field.ErrorText>{errors.last_name?.message}</Field.ErrorText>
+                </Field.Root>
+
+                <Field.Root invalid={!!errors.email}>
+                  <Field.Label>Email</Field.Label>
+                  <Input
+                    type="email"
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[^@]+@[^@]+\.[^@]+$/,
+                        message: "Invalid email format",
+                      },
+                    })}
+                  />
+                  <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
+                </Field.Root>
+
+                {userRole === "customer" && (
+                  <Field.Root invalid={!!errors.address}>
+                    <Field.Label>Address</Field.Label>
+                    <Input
+                      {...register("address", {
+                        required: "Address is required for customers",
+                      })}
+                    />
+                    <Field.ErrorText>{errors.address?.message}</Field.ErrorText>
+                  </Field.Root>
+                )}
+
+                {userRole === "seller" && (
                   <Field.Root invalid={!!errors.store_desc}>
                     <Field.Label>Store Description</Field.Label>
                     <Textarea
@@ -318,27 +362,35 @@ const RegistrationRouter = () => {
                       {errors.store_desc?.message}
                     </Field.ErrorText>
                   </Field.Root>
-                </>
-              )}
+                )}
+              </Stack>
+            </Box>
+          </Stack>
 
-              <Button type="submit" width="full" colorScheme="blue" mt="4">
-                Register
-              </Button>
-            </Stack>
-          </form>
-          <Box mt="6" textAlign="center">
-            <Text fontSize="sm" color="gray.300">
-              Already have an account?{" "}
-              <Link to="/login" >
-              <Text as="span" color="teal.500" fontWeight="bold" _hover={{ color: "blue.300" }}>  
+          <Button 
+            type="submit" 
+            width="full" 
+            colorScheme="teal" 
+            mt="8"
+            isLoading={isLoading}
+            size="lg"
+          >
+            Register
+          </Button>
+        </form>
+
+        <Box mt="6" textAlign="center">
+          <Text fontSize="sm" color="gray.300">
+            Already have an account?{" "}
+            <Link to="/login">
+              <Text as="span" color="teal.500" fontWeight="bold" _hover={{ color: "teal.300" }}>
                 Login here
               </Text>
-              </Link>
-            </Text>
-          </Box>
+            </Link>
+          </Text>
         </Box>
-      </Box>    
-  
+      </Box>
+    </Box>
   );
 };
 
