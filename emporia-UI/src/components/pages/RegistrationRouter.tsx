@@ -129,38 +129,33 @@ const RegistrationRouter = () => {
   });
 
   return (
-    <Box position="relative" minH="100vh">
-      <AuthBackground />
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      minH="100vh"
+      px="4"
+    >
       <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        minH="100vh"
-        px="4"
+        maxW="500px"
+        w="100%"
+        p="6"
+        boxShadow="lg"
+        rounded="md"
+        bg="gray.950"
       >
-        <Box 
-          maxW="500px" 
-          w="100%" 
-          p="8" 
-          boxShadow="xl" 
-          rounded="xl" 
-          bg="rgba(0, 0, 0, 0.8)"
-          backdropFilter="blur(10px)"
-          border="1px solid"
-          borderColor="whiteAlpha.200"
-        >
-          {/* Logo Section */}
-          <Box mb="8" textAlign="center">
-            <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide" color="white">
-              EMPORIA
-            </Heading>
-            <Text mt="2" fontSize="md" color="gray.300">
-              Your One-Stop Shopping Platform
-            </Text>
-          </Box>
-          <Heading size="lg" mb="6" textAlign="center" color="white">
-            Create an Account
+        {/* Logo Section */}
+        <Box mb="8" textAlign="center">
+          <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
+            <Link to="/">EMPORIA</Link>
           </Heading>
+          <Text mt="2" fontSize="md" color="gray.400">
+            Your One-Stop Shopping Platform
+          </Text>
+        </Box>
+        <Heading size="lg" mb="6" textAlign="center">
+          Create an Account
+        </Heading>
 
           <Box mb="6">
             <Text mb="2" fontWeight="medium" color="white">
