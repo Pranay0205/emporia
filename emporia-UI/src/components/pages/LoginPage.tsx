@@ -48,7 +48,7 @@ const LoginPage = () => {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Login failed");
-      }
+      } //Hello
 
       const responseData = await response.json();
       console.log("Login successful:", responseData);
@@ -64,33 +64,35 @@ const LoginPage = () => {
   });
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minH="100vh"
-      px="4"
-    >
+    
       <Box
-        maxW="400px"
-        w="100%"
-        p="6"
-        boxShadow="lg"
-        rounded="md"
-        bg="gray.950"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        minH="100vh"
+        px="4"
       >
-        {/* Logo Section */}
-        <Box mb="8" textAlign="center">
-          <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
-            <RouterLink to="/">EMPORIA</RouterLink>
+        <AuthBackground/>
+        <Box
+          maxW="400px"
+          w="100%"
+          p="6"
+          boxShadow="lg"
+          rounded="md"
+          bg="gray.950"
+        >
+          {/* Logo Section */}
+          <Box mb="8" textAlign="center">
+            <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
+              <RouterLink to="/">EMPORIA</RouterLink>
+            </Heading>
+            <Text mt="2" fontSize="md" color="gray.400">
+              Your One-Stop Shopping Platform
+            </Text>
+          </Box>
+          <Heading size="lg" mb="6" textAlign="center">
+            Login to Your Account
           </Heading>
-          <Text mt="2" fontSize="md" color="gray.400">
-            Your One-Stop Shopping Platform
-          </Text>
-        </Box>
-        <Heading size="lg" mb="6" textAlign="center">
-          Login to Your Account
-        </Heading>
 
           <form onSubmit={onSubmit}>
             <Stack gap="4" align="stretch">
@@ -144,7 +146,7 @@ const LoginPage = () => {
             <Text fontSize="sm" color="gray.300">
               Don't have an account?{" "}
               <RouterLink to="/register">
-                <Text as="span" color="teal.500" fontWeight="bold" _hover={{ color: "blue.300" }}>  
+                <Text as="span" color="teal.500" fontWeight="bold" _hover={{ color: "blue.300" }}>
                   Register here
                 </Text>
               </RouterLink>
@@ -152,7 +154,7 @@ const LoginPage = () => {
           </Box>
         </Box>
       </Box>
-    </Box>
+    
   );
 };
 

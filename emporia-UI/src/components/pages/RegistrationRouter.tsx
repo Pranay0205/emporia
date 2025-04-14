@@ -129,33 +129,35 @@ const RegistrationRouter = () => {
   });
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minH="100vh"
-      px="4"
-    >
+    
       <Box
-        maxW="500px"
-        w="100%"
-        p="6"
-        boxShadow="lg"
-        rounded="md"
-        bg="gray.950"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        minH="100vh"
+        px="4"
       >
-        {/* Logo Section */}
-        <Box mb="8" textAlign="center">
-          <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
-            <Link to="/">EMPORIA</Link>
+        <AuthBackground/>
+        <Box
+          maxW="500px"
+          w="100%"
+          p="6"
+          boxShadow="lg"
+          rounded="md"
+          bg="gray.950"
+        >
+          {/* Logo Section */}
+          <Box mb="8" textAlign="center">
+            <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
+              <Link to="/">EMPORIA</Link>
+            </Heading>
+            <Text mt="2" fontSize="md" color="gray.400">
+              Your One-Stop Shopping Platform
+            </Text>
+          </Box>
+          <Heading size="lg" mb="6" textAlign="center">
+            Create an Account
           </Heading>
-          <Text mt="2" fontSize="md" color="gray.400">
-            Your One-Stop Shopping Platform
-          </Text>
-        </Box>
-        <Heading size="lg" mb="6" textAlign="center">
-          Create an Account
-        </Heading>
 
           <Box mb="6">
             <Text mb="2" fontWeight="medium" color="white">
@@ -335,8 +337,8 @@ const RegistrationRouter = () => {
             </Text>
           </Box>
         </Box>
-      </Box>
-    </Box>
+      </Box>    
+  
   );
 };
 
