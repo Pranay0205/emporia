@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/password-input";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { AuthBackground } from "@/components/ui/auth-background";
 
 // Common form fields for all user types
 interface FormValues {
@@ -128,197 +129,216 @@ const RegistrationRouter = () => {
   });
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minH="100vh"
-      px="4"
-    >
-      <Box maxW="500px" w="100%" p="6" boxShadow="lg" rounded="md" bg="black">
-        {/* Logo Section */}
-        <Box mb="8" textAlign="center">
-          <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
-            EMPORIA
+    <Box position="relative" minH="100vh">
+      <AuthBackground />
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        minH="100vh"
+        px="4"
+      >
+        <Box 
+          maxW="500px" 
+          w="100%" 
+          p="8" 
+          boxShadow="xl" 
+          rounded="xl" 
+          bg="rgba(0, 0, 0, 0.8)"
+          backdropFilter="blur(10px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+        >
+          {/* Logo Section */}
+          <Box mb="8" textAlign="center">
+            <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide" color="white">
+              EMPORIA
+            </Heading>
+            <Text mt="2" fontSize="md" color="gray.300">
+              Your One-Stop Shopping Platform
+            </Text>
+          </Box>
+          <Heading size="lg" mb="6" textAlign="center" color="white">
+            Create an Account
           </Heading>
-          <Text mt="2" fontSize="md" color="gray.400">
-            Your One-Stop Shopping Platform
-          </Text>
-        </Box>
-        <Heading size="lg" mb="6" textAlign="center">
-          Create an Account
-        </Heading>
 
-        <Box mb="6">
-          <Text mb="2" fontWeight="medium">
-            Register as:
-          </Text>
-          <Stack direction="row" gap="4">
-            <Button
-              colorScheme={userRole === "customer" ? "blue" : "gray"}
-              variant={userRole === "customer" ? "solid" : "outline"}
-              flex="1"
-              onClick={() => setUserRole("customer")}
-            >
-              Customer
-            </Button>
-            <Button
-              colorScheme={userRole === "seller" ? "blue" : "gray"}
-              variant={userRole === "seller" ? "solid" : "outline"}
-              flex="1"
-              onClick={() => setUserRole("seller")}
-            >
-              Seller
-            </Button>
-          </Stack>
-        </Box>
+          <Box mb="6">
+            <Text mb="2" fontWeight="medium" color="white">
+              Register as:
+            </Text>
+            <Stack direction="row" gap="4">
+              <Button
+                colorScheme={userRole === "customer" ? "blue" : "gray"}
+                variant={userRole === "customer" ? "solid" : "outline"}
+                flex="1"
+                onClick={() => setUserRole("customer")}
+                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                transition="all 0.2s"
+              >
+                Customer
+              </Button>
+              <Button
+                colorScheme={userRole === "seller" ? "blue" : "gray"}
+                variant={userRole === "seller" ? "solid" : "outline"}
+                flex="1"
+                onClick={() => setUserRole("seller")}
+                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                transition="all 0.2s"
+              >
+                Seller
+              </Button>
+            </Stack>
+          </Box>
 
-        <form onSubmit={onSubmit}>
-          <Stack gap="4" align="stretch">
-            {/* Common Fields for Both User Types */}
-            <Field.Root invalid={!!errors.first_name}>
-              <Field.Label>First Name</Field.Label>
-              <Input
-                {...register("first_name", {
-                  required: "First name is required",
-                  pattern: {
-                    value: /^[A-Za-z]+$/,
-                    message: "First name can only contain letters",
-                  },
-                })}
-              />
-              <Field.ErrorText>{errors.first_name?.message}</Field.ErrorText>
-            </Field.Root>
+          <form onSubmit={onSubmit}>
+            <Stack gap="4" align="stretch">
+              {/* Common Fields for Both User Types */}
+              <Field.Root invalid={!!errors.first_name}>
+                <Field.Label>First Name</Field.Label>
+                <Input
+                  {...register("first_name", {
+                    required: "First name is required",
+                    pattern: {
+                      value: /^[A-Za-z]+$/,
+                      message: "First name can only contain letters",
+                    },
+                  })}
+                />
+                <Field.ErrorText>{errors.first_name?.message}</Field.ErrorText>
+              </Field.Root>
 
-            <Field.Root invalid={!!errors.last_name}>
-              <Field.Label>Last Name</Field.Label>
-              <Input
-                {...register("last_name", {
-                  required: "Last name is required",
-                  pattern: {
-                    value: /^[A-Za-z]+$/,
-                    message: "Last name can only contain letters",
-                  },
-                })}
-              />
-              <Field.ErrorText>{errors.last_name?.message}</Field.ErrorText>
-            </Field.Root>
+              <Field.Root invalid={!!errors.last_name}>
+                <Field.Label>Last Name</Field.Label>
+                <Input
+                  {...register("last_name", {
+                    required: "Last name is required",
+                    pattern: {
+                      value: /^[A-Za-z]+$/,
+                      message: "Last name can only contain letters",
+                    },
+                  })}
+                />
+                <Field.ErrorText>{errors.last_name?.message}</Field.ErrorText>
+              </Field.Root>
 
-            <Field.Root invalid={!!errors.user_name}>
-              <Field.Label>Username</Field.Label>
-              <Input
-                {...register("user_name", {
-                  required: "Username is required",
-                  pattern: {
-                    value: /^[A-Za-z0-9_]+$/,
-                    message:
-                      "Username can only contain letters, numbers, and underscores",
-                  },
-                })}
-              />
-              <Field.ErrorText>{errors.user_name?.message}</Field.ErrorText>
-            </Field.Root>
+              <Field.Root invalid={!!errors.user_name}>
+                <Field.Label>Username</Field.Label>
+                <Input
+                  {...register("user_name", {
+                    required: "Username is required",
+                    pattern: {
+                      value: /^[A-Za-z0-9_]+$/,
+                      message:
+                        "Username can only contain letters, numbers, and underscores",
+                    },
+                  })}
+                />
+                <Field.ErrorText>{errors.user_name?.message}</Field.ErrorText>
+              </Field.Root>
 
-            <Field.Root invalid={!!errors.email}>
-              <Field.Label>Email</Field.Label>
-              <Input
-                type="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[^@]+@[^@]+\.[^@]+$/,
-                    message: "Invalid email format",
-                  },
-                })}
-              />
-              <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
-            </Field.Root>
+              <Field.Root invalid={!!errors.email}>
+                <Field.Label>Email</Field.Label>
+                <Input
+                  type="email"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^@]+@[^@]+\.[^@]+$/,
+                      message: "Invalid email format",
+                    },
+                  })}
+                />
+                <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
+              </Field.Root>
 
-            <Field.Root invalid={!!errors.password}>
-              <Field.Label>Password</Field.Label>
-              <PasswordInput
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 8,
-                    message: "Password must be at least 8 characters",
-                  },
-                })}
-              />
-              <PasswordStrengthMeter
-                width="100%"
-                value={calculatePasswordStrength(password || "")}
-              />
-              <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
-            </Field.Root>
+              <Field.Root invalid={!!errors.password}>
+                <Field.Label>Password</Field.Label>
+                <PasswordInput
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                  })}
+                />
+                <PasswordStrengthMeter
+                  width="100%"
+                  value={calculatePasswordStrength(password || "")}
+                />
+                <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
+              </Field.Root>
 
-            {/* Conditional Fields Based on User Role */}
-            {userRole === "customer" && (
-              <>
-                <Field.Root invalid={!!errors.address}>
-                  <Field.Label>Address</Field.Label>
-                  <Input
-                    {...register("address", {
-                      required: "Address is required for customers",
-                    })}
-                  />
-                  <Field.ErrorText>{errors.address?.message}</Field.ErrorText>
-                </Field.Root>
+              {/* Conditional Fields Based on User Role */}
+              {userRole === "customer" && (
+                <>
+                  <Field.Root invalid={!!errors.address}>
+                    <Field.Label>Address</Field.Label>
+                    <Input
+                      {...register("address", {
+                        required: "Address is required for customers",
+                      })}
+                    />
+                    <Field.ErrorText>{errors.address?.message}</Field.ErrorText>
+                  </Field.Root>
 
-                <Field.Root invalid={!!errors.phone_number}>
-                  <Field.Label>Phone Number</Field.Label>
-                  <Input
-                    {...register("phone_number", {
-                      required: "Phone number is required for customers",
-                    })}
-                  />
-                  <Field.ErrorText>
-                    {errors.phone_number?.message}
-                  </Field.ErrorText>
-                </Field.Root>
-              </>
-            )}
+                  <Field.Root invalid={!!errors.phone_number}>
+                    <Field.Label>Phone Number</Field.Label>
+                    <Input
+                      {...register("phone_number", {
+                        required: "Phone number is required for customers",
+                      })}
+                    />
+                    <Field.ErrorText>
+                      {errors.phone_number?.message}
+                    </Field.ErrorText>
+                  </Field.Root>
+                </>
+              )}
 
-            {userRole === "seller" && (
-              <>
-                <Field.Root invalid={!!errors.store_name}>
-                  <Field.Label>Store Name</Field.Label>
-                  <Input
-                    {...register("store_name", {
-                      required: "Store name is required for sellers",
-                    })}
-                  />
-                  <Field.ErrorText>
-                    {errors.store_name?.message}
-                  </Field.ErrorText>
-                </Field.Root>
+              {userRole === "seller" && (
+                <>
+                  <Field.Root invalid={!!errors.store_name}>
+                    <Field.Label>Store Name</Field.Label>
+                    <Input
+                      {...register("store_name", {
+                        required: "Store name is required for sellers",
+                      })}
+                    />
+                    <Field.ErrorText>
+                      {errors.store_name?.message}
+                    </Field.ErrorText>
+                  </Field.Root>
 
-                <Field.Root invalid={!!errors.store_desc}>
-                  <Field.Label>Store Description</Field.Label>
-                  <Textarea
-                    {...register("store_desc", {
-                      required: "Store description is required for sellers",
-                    })}
-                  />
-                  <Field.ErrorText>
-                    {errors.store_desc?.message}
-                  </Field.ErrorText>
-                </Field.Root>
-              </>
-            )}
+                  <Field.Root invalid={!!errors.store_desc}>
+                    <Field.Label>Store Description</Field.Label>
+                    <Textarea
+                      {...register("store_desc", {
+                        required: "Store description is required for sellers",
+                      })}
+                    />
+                    <Field.ErrorText>
+                      {errors.store_desc?.message}
+                    </Field.ErrorText>
+                  </Field.Root>
+                </>
+              )}
 
-            <Button type="submit" width="full" colorScheme="blue" mt="4">
-              Register
-            </Button>
-          </Stack>
-        </form>
-        <Box mt="4" textAlign="center">
-          <Text fontSize="sm">
-            Don't have an account?{" "}
-            <Link to="/login" style={{ color: "blue.500" }}>
-              Login here
-            </Link>
-          </Text>
+              <Button type="submit" width="full" colorScheme="blue" mt="4">
+                Register
+              </Button>
+            </Stack>
+          </form>
+          <Box mt="6" textAlign="center">
+            <Text fontSize="sm" color="gray.300">
+              Already have an account?{" "}
+              <Link to="/login" >
+              <Text as="span" color="teal.500" fontWeight="bold" _hover={{ color: "blue.300" }}>  
+                Login here
+              </Text>
+              </Link>
+            </Text>
+          </Box>
         </Box>
       </Box>
     </Box>
