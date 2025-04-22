@@ -4,7 +4,9 @@ from flask import Flask
 from reg import User_Registry
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
+from repositories.database.db_category_repo import DBCategoryRepo
 from services.user_services import UserService
+from services.category_service import CategoryService
 from routes import register_blueprints
 import configparser
 from flask_cors import CORS
@@ -24,12 +26,15 @@ if __name__ == '__main__':
 
     # Initialize repositories
     user_repo = DBUserRepo(db)
+    category_repo = DBCategoryRepo(db)
 
     # Initialize services
     user_service = UserService(user_repo)
+    category_service = CategoryService(category_repo)
 
     # Add services to app context
     app.user_service = user_service
+    app.category_service = category_service
 
     # Register all blueprints
     register_blueprints(app)
@@ -38,4 +43,3 @@ if __name__ == '__main__':
     User_Registry.register_all_user_types()
 
     app.run(debug=True)
-    
