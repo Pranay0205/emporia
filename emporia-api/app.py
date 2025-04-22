@@ -20,7 +20,7 @@ CORS(app, supports_credentials=True)
 
 if __name__ == '__main__':
     print("Starting the Flask app...")
-  
+
     # Initialize database connection
     db = DatabaseConnection()
 
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     # Register all blueprints
     register_blueprints(app)
-    
+
     # Register user types
     User_Registry.register_all_user_types()
 
