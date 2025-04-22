@@ -6,7 +6,7 @@ from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
 from repositories.database.db_category_repo import DBCategoryRepo
 from services.user_services import UserService
-from services.category_service import CategoryService
+from services.category_services import CategoryService
 from routes import register_blueprints
 import configparser
 from flask_cors import CORS
