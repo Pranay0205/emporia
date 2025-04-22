@@ -5,6 +5,7 @@ import LoginPage from "./components/pages/LoginPage";
 import { Toaster } from "@/components/ui/toaster";
 import RegistrationRouter from "./components/pages/RegistrationRouter";
 import { Navbar } from "./components/ui/navbar";
+import CategoriesPage from "./components/pages/CategoriesPage";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegistrationRouter />} />
+        <Route path="/categories" element={<CategoriesPage />} />
         {/* Add more routes here as needed */}
       </Routes>
       <Toaster />

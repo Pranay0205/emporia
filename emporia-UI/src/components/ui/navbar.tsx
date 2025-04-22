@@ -1,4 +1,4 @@
-import { Box, Button, Container, Heading } from "@chakra-ui/react";
+import { Box, Button, Container, Heading, HStack } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
 export const Navbar = () => {
@@ -13,7 +13,13 @@ export const Navbar = () => {
               </Heading>
             </Box>
           </Link>
-          <Box display="flex" gap={4}>
+
+          <HStack spacing={4}>
+            <Link to="/categories">
+              <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
+                Categories
+              </Button>
+            </Link>
             <Link to="/login">
               <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
                 Login
@@ -24,7 +30,7 @@ export const Navbar = () => {
                 Get Started
               </Button>
             </Link>
-          </Box>
+          </HStack>
         </Box>
       </Container>
     </Box>
