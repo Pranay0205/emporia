@@ -17,7 +17,11 @@ app = Flask(__name__)
 config = configparser.ConfigParser()
 config.read('configs/config.ini')
 app.secret_key = config['server']['secret_key']
-CORS(app, supports_credentials=True)
+CORS(app,
+     resources={
+         r"/*": {"origins": ["http://localhost:5173"], "supports_credentials": True}},
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 
 if __name__ == '__main__':

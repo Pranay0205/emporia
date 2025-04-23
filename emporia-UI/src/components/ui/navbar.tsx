@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export const Navbar = () => {
   return (
-    <Box position="fixed" top={0} left={0} right={0} bg="rgba(0, 0, 0, 0.8)" backdropFilter="blur(10px)" zIndex={10}>
+    <Box position="relative" top={0} left={0} right={0} bg="rgba(0, 0, 0, 0.8)" backdropFilter="blur(10px)" zIndex={10}>
       <Container maxW="container.xl">
         <Box py={4} display="flex" justifyContent="space-between" alignItems="center">
           <Link to="/">
@@ -14,7 +14,7 @@ export const Navbar = () => {
             </Box>
           </Link>
 
-          <HStack spacing={4}>
+          <HStack gap={4}>
             <Link to="/categories">
               <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
                 Categories

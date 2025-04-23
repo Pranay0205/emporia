@@ -1,22 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Button,
-  Field,
-  Input,
-  Stack,
-  Box,
-  Heading,
-  Text,
-  Textarea,
-  Flex,
-  HStack,
-} from "@chakra-ui/react";
-import {
-  PasswordInput,
-  PasswordStrengthMeter,
-} from "@/components/ui/password-input";
+import { Button, Field, Input, Stack, Box, Heading, Text, Textarea, Flex, HStack } from "@chakra-ui/react";
+import { PasswordInput, PasswordStrengthMeter } from "@/components/ui/password-input";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { AuthBackground } from "@/components/ui/auth-background";
@@ -101,7 +87,7 @@ const RegistrationRouter = () => {
       console.log("Submitting registration data:", formData);
 
       // Make API call to register endpoint
-      const response = await fetch("http://localhost:5000/auth/register", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,34 +108,16 @@ const RegistrationRouter = () => {
       window.location.href = "/login";
     } catch (error) {
       console.error("Registration error:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Registration failed. Please try again."
-      );
+      setError(error instanceof Error ? error.message : "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   });
 
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      minH="100vh"
-      px="4"
-      my="24"
-    >
+    <Box display="flex" alignItems="center" justifyContent="center" minH="100vh" px="4" my="24">
       <AuthBackground />
-      <Box
-        maxW="800px"
-        w="100%"
-        p="6"
-        boxShadow="lg"
-        rounded="md"
-        bg="gray.950"
-      >
+      <Box maxW="800px" w="100%" p="6" boxShadow="lg" rounded="md" bg="gray.950">
         {/* Logo Section */}
         <Box mb="4" textAlign="center">
           <Heading as="h1" size="xl" fontWeight="bold" letterSpacing="wide">
@@ -168,22 +136,17 @@ const RegistrationRouter = () => {
           <Text mb="4" fontWeight="medium" color="white" textAlign="center">
             Register As
           </Text>
-          <HStack 
-            justify="center" 
-            gap="2" 
-            maxW="400px" 
-            mx="auto"
-          >
+          <HStack justify="center" gap="2" maxW="400px" mx="auto">
             <Button
               colorScheme="teal"
               variant={userRole === "customer" ? "solid" : "outline"}
               size="lg"
               w="150px"
               onClick={() => setUserRole("customer")}
-              _hover={{ 
-                transform: "translateY(-2px)", 
+              _hover={{
+                transform: "translateY(-2px)",
                 boxShadow: "lg",
-                bg: userRole === "customer" ? "teal.600" : "whiteAlpha.200" 
+                bg: userRole === "customer" ? "teal.600" : "whiteAlpha.200",
               }}
               transition="all 0.2s"
               borderWidth={2}
@@ -196,10 +159,10 @@ const RegistrationRouter = () => {
               size="lg"
               w="150px"
               onClick={() => setUserRole("seller")}
-              _hover={{ 
-                transform: "translateY(-2px)", 
+              _hover={{
+                transform: "translateY(-2px)",
                 boxShadow: "lg",
-                bg: userRole === "seller" ? "teal.600" : "whiteAlpha.200"
+                bg: userRole === "seller" ? "teal.600" : "whiteAlpha.200",
               }}
               transition="all 0.2s"
               borderWidth={2}
@@ -238,8 +201,7 @@ const RegistrationRouter = () => {
                       required: "Username is required",
                       pattern: {
                         value: /^[A-Za-z0-9_]+$/,
-                        message:
-                          "Username can only contain letters, numbers, and underscores",
+                        message: "Username can only contain letters, numbers, and underscores",
                       },
                     })}
                   />
@@ -257,10 +219,7 @@ const RegistrationRouter = () => {
                       },
                     })}
                   />
-                  <PasswordStrengthMeter
-                    width="100%"
-                    value={calculatePasswordStrength(password || "")}
-                  />
+                  <PasswordStrengthMeter width="100%" value={calculatePasswordStrength(password || "")} />
                   <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
                 </Field.Root>
 
@@ -269,8 +228,7 @@ const RegistrationRouter = () => {
                   <PasswordInput
                     {...register("confirmPassword", {
                       required: "Please confirm your password",
-                      validate: (value) =>
-                        value === password || "Passwords do not match",
+                      validate: (value) => value === password || "Passwords do not match",
                     })}
                   />
                   <Field.ErrorText>{errors.confirmPassword?.message}</Field.ErrorText>
@@ -284,9 +242,7 @@ const RegistrationRouter = () => {
                         required: "Phone number is required for customers",
                       })}
                     />
-                    <Field.ErrorText>
-                      {errors.phone_number?.message}
-                    </Field.ErrorText>
+                    <Field.ErrorText>{errors.phone_number?.message}</Field.ErrorText>
                   </Field.Root>
                 )}
 
@@ -298,9 +254,7 @@ const RegistrationRouter = () => {
                         required: "Store name is required for sellers",
                       })}
                     />
-                    <Field.ErrorText>
-                      {errors.store_name?.message}
-                    </Field.ErrorText>
+                    <Field.ErrorText>{errors.store_name?.message}</Field.ErrorText>
                   </Field.Root>
                 )}
               </Stack>
@@ -358,23 +312,14 @@ const RegistrationRouter = () => {
                         required: "Store description is required for sellers",
                       })}
                     />
-                    <Field.ErrorText>
-                      {errors.store_desc?.message}
-                    </Field.ErrorText>
+                    <Field.ErrorText>{errors.store_desc?.message}</Field.ErrorText>
                   </Field.Root>
                 )}
               </Stack>
             </Box>
           </Stack>
 
-          <Button 
-            type="submit" 
-            width="full" 
-            colorScheme="teal" 
-            mt="8"
-            isLoading={isLoading}
-            size="lg"
-          >
+          <Button type="submit" width="full" colorScheme="teal" mt="8" isLoading={isLoading} size="lg">
             Register
           </Button>
         </form>
