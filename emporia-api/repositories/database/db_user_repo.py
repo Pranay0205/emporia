@@ -113,3 +113,62 @@ class DBUserRepo(UserRepository):
                 return None
         except Exception as e:
             raise ValueError(f"Error fetching user by username: {e}")
+    
+    def get_seller_by_username(self, userid):
+        try:
+            self.cursor.execute("""
+                SELECT seller_id, store_name, store_desc
+                FROM sellers 
+                WHERE user_id = %s
+            """, (userid,))
+            
+            user = self.cursor.fetchone()
+            
+            if user:
+                print(f"User {userid} found in the database.")
+                return user
+            else:
+                print(f"User {userid} not found in the database.")
+                return None
+        except Exception as e:
+            raise ValueError(f"Error fetching seller by userid: {e}")
+        
+    def get_admin_by_username(self, userid):
+        try:
+            self.cursor.execute("""
+                SELECT admin_id, permissions
+                FROM admins 
+                WHERE user_id = %s
+            """, (userid,))
+            
+            user = self.cursor.fetchone()
+            
+            
+            if user:
+                print(f"User {userid} found in the database.")
+                return user
+            else:
+                print(f"User {userid} not found in the database.")
+                return None
+        except Exception as e:
+            raise ValueError(f"Error fetching user by userid: {e}")
+        
+    def get_customer_by_username(self, userid):
+        try:
+            self.cursor.execute("""
+                SELECT customer_id, address, phone_number
+                FROM customers 
+                WHERE user_id = %s
+            """, (userid,))
+            
+            user = self.cursor.fetchone()
+            
+            
+            if user:
+                print(f"User {userid} found in the database.")
+                return user
+            else:
+                print(f"User {userid} not found in the database.")
+                return None
+        except Exception as e:
+            raise ValueError(f"Error fetching user by userid: {e}")

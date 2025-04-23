@@ -5,6 +5,9 @@ from factories.UserFactory.UserFactory import UserFactory
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
 from models.Users.User import User
+from models.Users.Seller import Seller  # Import the Seller class
+from models.Users.Admin import Admin  # Import the Admin class
+from models.Users.Customer import Customer  # Import the Customer class
 import hashlib
 
 
@@ -68,10 +71,73 @@ class UserService:
     
     except Exception as e:
       raise ValueError(f"Failed to convert array to user: {str(e)}")
+    
+  def _convert_array_to_seller(self, user_data, user):
+    try:
+      if not user_data:
+          return None
+      user = Seller(
+          id=user.id,
+          first_name=user.first_name,
+          last_name=user.last_name,
+          user_name=user.user_name, 
+          email=user.email,
+          password=user.password,
+          role=user.role,
+          seller_id=user_data[0],
+          store_name=user_data[1],
+          store_desc=user_data[2]
+      )
+      return user
+    
+    except Exception as e:
+      raise ValueError(f"Failed to convert array to Seller: {str(e)}")
 
+  def _convert_array_to_admin(self, user_data):
+      try:
+        
+        if not user_data:
+            return None
+
+        user = Admin(
+            id=user.id,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            user_name=user.user_name, 
+            email=user.email,
+            password=user.password,
+            role=user.role,
+            admin_id=user_data[0],
+            permissions=user_data[1]
+        )
+        return user
       
-      
+      except Exception as e:
+        raise ValueError(f"Failed to convert array to Admin: {str(e)}")
   
+  def _convert_array_to_customer(self, user_data):
+      try:
+        
+        if not user_data:
+            return None
+
+        user = Customer(
+            id=user.id,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            user_name=user.user_name, 
+            email=user.email,
+            password=user.password,
+            role=user.role,
+            customer_id=user_data[0],
+            address=user_data[1],
+            phone_number=user_data[2]
+        )
+        return user
+      
+      except Exception as e:
+        raise ValueError(f"Failed to convert array to Admin: {str(e)}")
+
   
   def authenticate_user(self, username, password):
       
@@ -85,11 +151,13 @@ class UserService:
             raise ValueError("Username and password cannot be empty")
           
         raw_user = self.user_repository.get_user_by_username(username)
+
+        
         if not raw_user:
             raise ValueError("User not found")
           
         user = self._convert_array_to_user(raw_user)
-
+        
         # Hash the provided password
         hashed_password = hashlib.sha256(password.encode("utf-8")).hexdigest()
         
@@ -98,6 +166,21 @@ class UserService:
             raise ValueError("Invalid password")
         else:
             is_authenticated = True
+            if user.role == 'seller':
+              seller = self.user_repository.get_seller_by_username(user.id)
+              print(seller)
+              seller = self._convert_array_to_seller(seller,user)
+              session['seller_id'] = seller.seller_id
+            elif(user.role == 'admin'):
+              admin = self.user_repository.get_admin_by_username(user.id)
+              admin = self._convert_array_to_admin(admin, user)
+              session['admin_id'] = admin.admin_id
+            elif(user.role == 'customer'):
+              customer = self.user_repository.get_customer_by_username(user.id)
+              customer = self._convert_array_to_customer(customer,user)
+              session['customer_id'] = customer.customer_id
+            else:
+              raise ValueError("Invalid role")
             session['is_authenticated'] = True
             session['role'] = user.role
             session['user_id'] = user.id
