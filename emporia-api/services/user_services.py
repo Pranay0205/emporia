@@ -93,7 +93,7 @@ class UserService:
     except Exception as e:
       raise ValueError(f"Failed to convert array to Seller: {str(e)}")
 
-  def _convert_array_to_admin(self, user_data):
+  def _convert_array_to_admin(self, user_data, user):
       try:
         
         if not user_data:
@@ -115,7 +115,7 @@ class UserService:
       except Exception as e:
         raise ValueError(f"Failed to convert array to Admin: {str(e)}")
   
-  def _convert_array_to_customer(self, user_data):
+  def _convert_array_to_customer(self, user_data, user):
       try:
         
         if not user_data:
