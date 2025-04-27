@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS products (
     seller_id INT,
     FOREIGN KEY (category_id) REFERENCES categories(id),
     FOREIGN KEY (seller_id) REFERENCES sellers(seller_id)
+    image VARCHAR(255) -- Assuming image is a URL or path to the image
 );
 
 -- Shopping Carts Table
@@ -65,6 +66,16 @@ CREATE TABLE IF NOT EXISTS shopping_carts (
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
+-- Cart Items Table (for cart-product relationship)
+CREATE TABLE IF NOT EXISTS cart_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cart_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (cart_id) REFERENCES shopping_carts(id),
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    UNIQUE KEY cart_product (cart_id, product_id)
+);
 -- Orders Table
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,3 +85,15 @@ CREATE TABLE IF NOT EXISTS orders (
     customer_id INT,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
+
+-- Order Items Table
+CREATE TABLE IF NOT EXISTS order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+

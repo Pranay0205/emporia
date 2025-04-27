@@ -60,9 +60,9 @@ class UserService:
 
       user = User(
           id=user_data[0],
-          first_name=user_data[1],
-          last_name=user_data[2],
-          user_name=user_data[3],
+          user_name=user_data[1],
+          first_name=user_data[2],
+          last_name=user_data[3],
           email=user_data[4],
           password=user_data[5],
           role=user_data[6]
