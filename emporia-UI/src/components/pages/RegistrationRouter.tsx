@@ -6,6 +6,7 @@ import { PasswordInput, PasswordStrengthMeter } from "@/components/ui/password-i
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { AuthBackground } from "@/components/ui/auth-background";
+import { toaster } from "@/components/ui/toaster";
 
 // Common form fields for all user types
 interface FormValues {
@@ -45,7 +46,7 @@ const calculatePasswordStrength = (password: string) => {
 const RegistrationRouter = () => {
   const [userRole, setUserRole] = useState<"customer" | "seller">("customer");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -103,12 +104,20 @@ const RegistrationRouter = () => {
         throw new Error(responseData.message || "Registration failed");
       }
 
-      console.log("Registration successful:", responseData);
+      toaster.create({
+        type: "success",
+        title: "Registration Successful",
+        description: "You have successfully registered. Please log in to continue.",
+      });
       // Redirect to login page after successful registration
       window.location.href = "/login";
     } catch (error) {
       console.error("Registration error:", error);
-      setError(error instanceof Error ? error.message : "Registration failed. Please try again.");
+      toaster.create({
+        type: "error",
+        title: "Registration Failed",
+        description: error instanceof Error ? error.message : "Registration failed. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -319,7 +328,7 @@ const RegistrationRouter = () => {
             </Box>
           </Stack>
 
-          <Button type="submit" width="full" colorScheme="teal" mt="8" isLoading={isLoading} size="lg">
+          <Button type="submit" width="full" colorScheme="teal" mt="8" size="lg">
             Register
           </Button>
         </form>

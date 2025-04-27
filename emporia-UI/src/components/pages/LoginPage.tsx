@@ -1,19 +1,20 @@
 "use client";
-
 import { useState } from "react";
 import { Button, Field, Input, Stack, Box, Heading, Text } from "@chakra-ui/react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useForm } from "react-hook-form";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { AuthBackground } from "@/components/ui/auth-background";
+import { toaster } from "../ui/toaster";
 
 interface FormValues {
   username: string;
   password: string;
 }
 
-const LoginPage = () => {
+const LoginPage = ({ setIsAuth }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -38,20 +39,38 @@ const LoginPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        toaster.create({
+          type: "error",
+          title: "Login Failed",
+          description: errorData.message || "An error occurred during login.",
+        });
         throw new Error(errorData.message || "Login failed");
-      } //Hello
+      }
 
       const responseData = await response.json();
       console.log("Login successful:", responseData);
 
       // Store user data in sessionStorage
-      sessionStorage.setItem("user", JSON.stringify(responseData.user));
 
-      // Redirect to dashboard or home page after successful login
-      window.location.href = "/";
+      sessionStorage.setItem("user", JSON.stringify(responseData.user));
+      sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
+
+      setTimeout(() => {
+        navigate("/");
+        setIsAuth(true);
+        toaster.create({
+          type: "success",
+          title: "Login Successful",
+          description: "Welcome back! Redirecting to your dashboard...",
+        });
+      }, 1000);
     } catch (error) {
       console.error("Login error:", error);
-      // Here you would handle errors, e.g., show a toast notification
+      toaster.create({
+        type: "error",
+        title: "Login Error",
+        description: "An unexpected error occurred.",
+      });
     } finally {
       setIsLoading(false);
     }
