@@ -12,7 +12,11 @@ interface FormValues {
   password: string;
 }
 
-const LoginPage = ({ setIsAuth }) => {
+interface LoginPageProps {
+  setIsAuth: (isAuth: boolean) => void;
+}
+
+const LoginPage = ({ setIsAuth }: LoginPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const {

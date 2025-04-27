@@ -1,164 +1,178 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+import { toaster } from "../ui/toaster";
+import { Box, Button, Card, Image, Text } from "@chakra-ui/react";
 
-interface Product {
-    product_id: number;
+const ProductPage = () => {
+  interface User {
+    id: number;
+    first_name: string;
+    last_name: string;
+    username: string;
+    email: string;
+    role: string;
+  }
+
+  interface Category {
+    id: number;
+    name: string;
+    description: string;
+  }
+
+  interface Product {
+    id: number;
     name: string;
     description: string;
     price: number;
-    image: string;
+    categoryId: number;
     stock: number;
-    category_id: number;
-    seller_id: number;
-}
+    imageUrl: string;
+  }
 
-interface Category {
-    category_id: number;
-    name: string;
-    description: string;
-}
+  const API_URL = import.meta.env.VITE_API_URL;
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const isAuthenticated = sessionStorage.getItem("isAuthenticated");
+  const [user, setUser] = useState<User | null>(null);
 
-export default function ProductPage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState(1);
-    const limit = 12; // Products per page
+  if (!isAuthenticated) {
+    toaster.create({
+      type: "error",
+      title: "Login Required",
+      description: "You must be logged in to view this page.",
+    });
+  }
 
-    useEffect(() => {
-        fetchCategories();
-        fetchProducts();
-    }, [selectedCategory, page]);
+  useEffect(() => {
+    const user = sessionStorage.getItem("user");
+    if (!user) {
+      toaster.create({
+        type: "error",
+        title: "User Not Found",
+        description: "No user data found in session storage.",
+      });
+    } else {
+      setUser(JSON.parse(user));
 
-    const fetchCategories = async () => {
-        try {
-            const response = await fetch('http://localhost:5000/categories');
-            if (!response.ok) throw new Error('Failed to fetch categories');
-            const data = await response.json();
-            setCategories(data.categories);
-        } catch (err) {
-            setError('Failed to load categories');
-            console.error(err);
-        }
-    };
-
-    const fetchProducts = async () => {
-        try {
-            setLoading(true);
-            const offset = (page - 1) * limit;
-            const baseUrl = 'http://localhost:5000/products';
-            const url = selectedCategory
-                ? `${baseUrl}/category/${selectedCategory}`
-                : `${baseUrl}?limit=${limit}&offset=${offset}`;
-            
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed to fetch products');
-            const data = await response.json();
-            setProducts(data.products);
-            setError(null);
-        } catch (err) {
-            setError('Failed to load products');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (error) {
-        return <div className="text-red-600 p-4">{error}</div>;
+      console.log("User data:", JSON.parse(user));
     }
+  }, []);
 
-    return (
-        <div className="container mx-auto px-4 py-8">
-            {/* Category Filter */}
-            <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Categories</h2>
-                <div className="flex gap-2 flex-wrap">
-                    <button
-                        onClick={() => setSelectedCategory(null)}
-                        className={`px-4 py-2 rounded ${
-                            selectedCategory === null
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-200'
-                        }`}
-                    >
-                        All
-                    </button>
-                    {categories.map((category) => (
-                        <button
-                            key={category.category_id}
-                            onClick={() => setSelectedCategory(category.category_id)}
-                            className={`px-4 py-2 rounded ${
-                                selectedCategory === category.category_id
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-200'
-                            }`}
-                        >
-                            {category.name}
-                        </button>
-                    ))}
-                </div>
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${API_URL}/products`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        // Handle error response
+        toaster.create({
+          title: "Failed to fetch products",
+          description: errorData.message || "An error occurred while fetching products.",
+          meta: { pauseOnHover: true, closable: true },
+          type: "error",
+        });
+        throw new Error(errorData.message || "Failed to fetch products");
+      }
+
+      // Check if the response is in JSON format
+      const data = await response.json();
+
+      setProducts(data.products || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_URL}/categories`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        // Handle error response
+        toaster.create({
+          title: "Failed to fetch categories",
+          description: errorData.message || "An error occurred while fetching categories.",
+          meta: { pauseOnHover: true, closable: true },
+          type: "error",
+        });
+        throw new Error(errorData.message || "Failed to fetch categories");
+      }
+
+      // Check if the response is in JSON format
+      const data = await response.json();
+
+      setCategories(data.categories || []);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchProducts();
+      await fetchCategories();
+    };
+
+    fetchData();
+  }, []);
+
+  const productJSX = {
+    products: products.map((product) => (
+      <Box key={product.id} padding="4">
+        <Card.Root maxW="sm" overflow="hidden">
+          <Image src={product.imageUrl || "https://placehold.in/400x300"} alt={product.name} />
+          <Card.Body gap="2">
+            <Card.Title>{product.name}</Card.Title>
+            <Card.Description>{product.description}</Card.Description>
+            <Text textStyle="2xl" fontWeight="medium" letterSpacing="tight" mt="2">
+              ${product.price}
+            </Text>
+            <Text>Stock: {product.stock}</Text>
+          </Card.Body>
+          <Card.Footer gap="2">
+            <Button variant="solid" colorPalette="teal">
+              Update
+            </Button>
+            <Button variant="solid" colorPalette="red">
+              Delete
+            </Button>
+          </Card.Footer>
+        </Card.Root>
+      </Box>
+    )),
+  };
+
+  return (
+    <div>
+      {user && user.role === "seller" && (
+        <div>
+          <Box padding="4" textAlign="center">
+            <Text
+              textStyle="7xl"
+              className="flex items-center justify-center"
+              fontWeight="bold"
+              letterSpacing="tight"
+              mt="2"
+            >
+              Your Products
+            </Text>
+          </Box>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {productJSX.products}
             </div>
-
-            {/* Products Grid */}
-            {loading ? (
-                <div className="text-center">Loading...</div>
-            ) : (
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {products.map((product) => (
-                            <div
-                                key={product.product_id}
-                                className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
-                            >
-                                {product.image && (
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-48 object-cover rounded-md mb-4"
-                                    />
-                                )}
-                                <h3 className="font-semibold text-lg mb-2">
-                                    {product.name}
-                                </h3>
-                                <p className="text-gray-600 mb-2 line-clamp-2">
-                                    {product.description}
-                                </p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-lg font-bold">
-                                        ${product.price.toFixed(2)}
-                                    </span>
-                                    <span className="text-sm text-gray-500">
-                                        Stock: {product.stock}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Pagination */}
-                    {!selectedCategory && (
-                        <div className="mt-8 flex justify-center gap-2">
-                            <button
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                disabled={page === 1}
-                                className="px-4 py-2 rounded bg-gray-200 disabled:opacity-50"
-                            >
-                                Previous
-                            </button>
-                            <span className="px-4 py-2">Page {page}</span>
-                            <button
-                                onClick={() => setPage((p) => p + 1)}
-                                disabled={products.length < limit}
-                                className="px-4 py-2 rounded bg-gray-200 disabled:opacity-50"
-                            >
-                                Next
-                            </button>
-                        </div>
-                    )}
-                </>
-            )}
+          ) : (
+            <p>No products found.</p>
+          )}
         </div>
-    );
-}
+      )}
+    </div>
+  );
+};
+
+export default ProductPage;

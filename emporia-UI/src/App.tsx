@@ -8,6 +8,7 @@ import { Navbar } from "./components/ui/navbar";
 import CategoriesPage from "./components/pages/CategoriesPage";
 import MarketPage from "./components/pages/MarketPage";
 import ProductPage from "./components/pages/ProductPage";
+
 import { useEffect, useState } from "react";
 
 function App() {

@@ -48,6 +48,11 @@ export const Navbar = ({
                     Categories
                   </Button>
                 </Link>
+                <Link to="/products">
+                  <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
+                    Products
+                  </Button>
+                </Link>
                 <Link
                   to="/"
                   onClick={() => {
