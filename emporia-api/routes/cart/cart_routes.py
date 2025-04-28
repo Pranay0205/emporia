@@ -1,4 +1,3 @@
-# emporia-api/routes/cart/cart_routes.py
 from flask import Blueprint, current_app, request, jsonify, session
 
 cart_bp = Blueprint('cart', __name__, url_prefix='/cart')
@@ -38,6 +37,7 @@ def add_to_cart():
     """Add an item to the shopping cart"""
     try:
         # Check if user is authenticated
+        print("Session before adding item:", session.get('is_authenticated'))
         if not session.get('is_authenticated'):
             return jsonify({'message': 'Authentication required'}), 401
 

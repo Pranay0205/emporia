@@ -13,7 +13,6 @@ import {
   CloseButton,
   createListCollection,
   NativeSelect,
-  HStack,
   Flex,
 } from "@chakra-ui/react";
 
@@ -61,12 +60,13 @@ const ProductPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_URL}/products/`, {
+      const response = await fetch(`${API_URL}/products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(newProduct),
+        credentials: "include",
       });
 
       if (!response.ok) {

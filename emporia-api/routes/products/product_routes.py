@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, request, jsonify, session
+from flask import Blueprint,  current_app, request, jsonify, session
 
 product_bp = Blueprint('products', __name__, url_prefix='/products')
 
@@ -7,6 +7,7 @@ product_bp = Blueprint('products', __name__, url_prefix='/products')
 def get_all_products():
     """Get all products with optional pagination"""
     try:
+
         limit = request.args.get('limit', 100, type=int)
         offset = request.args.get('offset', 0, type=int)
 
@@ -54,7 +55,7 @@ def get_products_by_seller(seller_id):
 def create_product():
     """Create a new product - requires authenticated seller"""
     try:
-
+        print(f"session auth : {session.get('is_authenticated')}")
         data = request.get_json()
         print(data)
         if not data:

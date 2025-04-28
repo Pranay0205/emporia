@@ -38,7 +38,7 @@ const MarketPage = () => {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ cart_id: 0, product_id: productId, quantity: 1, customer_id: user.id }),
+        body: JSON.stringify({ cart_id: 0, product_id: productId, quantity: 1, user_id: user.id }),
       });
 
       if (!response.ok) {
