@@ -5,7 +5,7 @@ product_bp = Blueprint('products', __name__, url_prefix='/products')
 
 @product_bp.route('/', methods=['GET'])
 def get_all_products():
-    """Get all products with optional pagination"""
+
     try:
 
         limit = request.args.get('limit', 100, type=int)
@@ -19,7 +19,7 @@ def get_all_products():
 
 @product_bp.route('/<int:product_id>', methods=['GET'])
 def get_product(product_id):
-    """Get a specific product by ID"""
+
     try:
         product = current_app.product_service.get_product_by_id(product_id)
         return jsonify({'product': product}), 200
@@ -31,7 +31,7 @@ def get_product(product_id):
 
 @product_bp.route('/category/<int:category_id>', methods=['GET'])
 def get_products_by_category(category_id):
-    """Get products by category ID"""
+
     try:
         products = current_app.product_service.get_products_by_category(
             category_id)
@@ -42,7 +42,7 @@ def get_products_by_category(category_id):
 
 @product_bp.route('/seller/<int:seller_id>', methods=['GET'])
 def get_products_by_seller(seller_id):
-    """Get products by seller ID"""
+
     try:
         products = current_app.product_service.get_products_by_seller(
             seller_id)

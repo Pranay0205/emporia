@@ -5,7 +5,6 @@ from models.Order.Order import Order
 
 
 class ValidateOrderCommand(OrderCommand):
-    """Command to validate an order before processing"""
 
     def __init__(self, shopping_cart, customer_id):
         self.shopping_cart = shopping_cart
@@ -37,7 +36,6 @@ class ValidateOrderCommand(OrderCommand):
 
 
 class CreateOrderCommand(OrderCommand):
-    """Command to create an order record in the database"""
 
     def __init__(self, order_repository, customer_id, product_list, amount):
         self.order_repository = order_repository
@@ -69,7 +67,6 @@ class CreateOrderCommand(OrderCommand):
 
 
 class UpdateInventoryCommand(OrderCommand):
-    """Command to update product inventory after order creation"""
 
     def __init__(self, product_repository, product_list):
         self.product_repository = product_repository
@@ -104,7 +101,6 @@ class UpdateInventoryCommand(OrderCommand):
 
 
 class ProcessPaymentCommand(OrderCommand):
-    """Command to process payment for an order"""
 
     def __init__(self, payment_service, order, payment_method):
         self.payment_service = payment_service
@@ -134,7 +130,6 @@ class ProcessPaymentCommand(OrderCommand):
 
 
 class UpdateOrderStatusCommand(OrderCommand):
-    """Command to update order status"""
 
     def __init__(self, order_repository, order_id, new_status):
         self.order_repository = order_repository

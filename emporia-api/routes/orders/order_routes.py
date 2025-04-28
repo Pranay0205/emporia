@@ -6,7 +6,7 @@ order_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
 @order_bp.route('/', methods=['POST'])
 def place_order():
-    """Place a new order"""
+
     try:
         # Check if user is authenticated
         if not session.get('is_authenticated'):
@@ -51,7 +51,7 @@ def place_order():
 
 @order_bp.route('/', methods=['GET'])
 def get_customer_orders():
-    """Get all orders for the authenticated customer"""
+
     try:
         # Check if user is authenticated
         if not session.get('is_authenticated'):
@@ -69,7 +69,7 @@ def get_customer_orders():
 
 @order_bp.route('/<int:order_id>', methods=['GET'])
 def get_order(order_id):
-    """Get a specific order by ID"""
+
     try:
         # Check if user is authenticated
         if not session.get('is_authenticated'):
@@ -90,7 +90,7 @@ def get_order(order_id):
 
 @order_bp.route('/<int:order_id>/cancel', methods=['POST'])
 def cancel_order(order_id):
-    """Cancel an order"""
+
     try:
         # Check if user is authenticated
         if not session.get('is_authenticated'):

@@ -2,18 +2,20 @@ from flask import Blueprint, current_app, request, jsonify
 
 user_bp = Blueprint('users', __name__, url_prefix='/users')
 
+
 @user_bp.route('/', methods=['GET'])
 def get_all_users():
-    """Get all users"""
+
     try:
         users = current_app.user_service.get_all_users()
         return jsonify({'users': users}), 200
     except Exception as e:
         return jsonify({'message': f'Error retrieving users: {str(e)}'}), 500
 
+
 @user_bp.route('/<int:user_id>', methods=['GET'])
 def get_user(user_id):
-    """Get a specific user by ID"""
+
     try:
         user = current_app.user_service.get_user_by_id(user_id)
         # For now, return a placeholder response
@@ -26,7 +28,7 @@ def get_user(user_id):
 
 @user_bp.route('/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    """Delete a user"""
+
     try:
         # This would call a user service
         # current_app.user_service.delete_user(user_id)
@@ -36,4 +38,3 @@ def delete_user(user_id):
         return jsonify({'message': str(e)}), 404
     except Exception as e:
         return jsonify({'message': f'Error deleting user: {str(e)}'}), 500
-

@@ -34,7 +34,7 @@ def get_cart():
 
 @cart_bp.route('/items', methods=['POST'])
 def add_to_cart():
-    """Add an item to the shopping cart"""
+
     try:
         # Check if user is authenticated
         print("Session before adding item:", session.get('is_authenticated'))
@@ -140,7 +140,7 @@ def update_cart_item(product_id):
 
 @cart_bp.route('/items/<int:product_id>', methods=['DELETE'])
 def remove_from_cart(product_id):
-    """Remove an item from the shopping cart"""
+
     try:
         # Check if user is authenticated
         if not session.get('is_authenticated'):
@@ -182,7 +182,7 @@ def remove_from_cart(product_id):
 
 @cart_bp.route('/', methods=['DELETE'])
 def clear_cart():
-    """Clear the shopping cart"""
+
     try:
         # Check if user is authenticated
         if not session.get('is_authenticated'):

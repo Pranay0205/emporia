@@ -1,23 +1,21 @@
 from abc import abstractmethod
 
+
 class CategoryRepository:
     def __init__(self, db):
         self.db = db
-      
+
     @abstractmethod
     def get_all_categories(self):
         """
         Fetch all categories from the database.
         """
         pass
-      
+
     @abstractmethod
     def get_by_id(self, category_id):
-        """
-        Fetch a category by its ID from the database.
-        """
         pass
-  
+
     @abstractmethod
     def create(self, category):
         """
