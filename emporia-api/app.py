@@ -22,11 +22,10 @@ app = Flask(__name__)
 config = configparser.ConfigParser()
 config.read('configs/config.ini')
 app.secret_key = config['server']['secret_key']
-CORS(app,
-     resources={
-         r"/*": {"origins": ["http://localhost:5173"], "supports_credentials": True}},
-     allow_headers=["Content-Type", "Authorization"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+CORS(app, supports_credentials=True)
 
 
 if __name__ == '__main__':
@@ -40,8 +39,7 @@ if __name__ == '__main__':
     category_repo = DBCategoryRepo(db)
     product_repo = DBProductRepo(db)
     order_repo = DBOrderRepo(db)
-    cart_repo= DBCartRepo(db)
-    
+    cart_repo = DBCartRepo(db)
 
     # Initialize services
     user_service = UserService(user_repo)

@@ -60,7 +60,6 @@ const RegistrationRouter = () => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       setIsLoading(true);
-      setError("");
 
       // Format the data according to your API requirements
       const formData = {
