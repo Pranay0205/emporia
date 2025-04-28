@@ -1,7 +1,18 @@
-import { Box, Button, Container, Heading, HStack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  HStack,
+  Text,
+  Menu,
+  Portal,
+  Avatar as ChakraAvatar,
+  Avatar,
+} from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
 import { toaster } from "./toaster";
-import { FiShoppingCart } from "react-icons/fi";
+import { FiShoppingCart, FiUser } from "react-icons/fi";
 import { useEffect, useState } from "react";
 
 export const Navbar = ({
@@ -13,28 +24,32 @@ export const Navbar = ({
 }) => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState(0);
+  const [user, setUser] = useState<{ first_name: string; last_name: string; email: string } | null>(null);
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    // Fetch cart data when authenticated
+    const fetchCartData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/cart/`, {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCartItems(data.cart.total_items);
+        }
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      }
+    };
+
     if (isAuthenticated) {
       fetchCartData();
+      const userData = sessionStorage.getItem("user");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
     }
   }, [isAuthenticated]);
-
-  const fetchCartData = async () => {
-    try {
-      const response = await fetch(`${API_URL}/cart/`, {
-        credentials: "include",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCartItems(data.cart.total_items);
-      }
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-    }
-  };
 
   const handleLogout = () => {
     setTimeout(() => {
@@ -102,11 +117,39 @@ export const Navbar = ({
                     )}
                   </Button>
                 </Link>
-                <Link to="/" onClick={handleLogout}>
-                  <Button variant="ghost" color="red" _hover={{ bg: "whiteAlpha.800" }}>
-                    Logout
-                  </Button>
-                </Link>
+                <Menu.Root>
+                  <Menu.Trigger>
+                    <HStack>
+                      {user && (
+                        <Text color="white" fontSize="sm">
+                          {user.first_name}
+                        </Text>
+                      )}
+                      <Avatar.Root size="sm" bg="teal.500">
+                        <Avatar.Fallback
+                          className="cursor-pointer"
+                          name={user ? user.first_name + " " + user.last_name : undefined}
+                        ></Avatar.Fallback>
+                      </Avatar.Root>
+                    </HStack>
+                  </Menu.Trigger>
+                  <Portal>
+                    <Menu.Positioner>
+                      <Menu.Content bg="gray.800" borderColor="gray.700">
+                        <Menu.Item value="profile" _hover={{ bg: "gray.700" }}>
+                          <Text color="white">Profile</Text>
+                        </Menu.Item>
+                        <Menu.Item value="settings" _hover={{ bg: "gray.700" }}>
+                          <Text color="white">Settings</Text>
+                        </Menu.Item>
+                        <Menu.Separator borderColor="gray.700" />
+                        <Menu.Item value="logout" _hover={{ bg: "gray.700" }} onClick={handleLogout}>
+                          <Text color="red.400">Logout</Text>
+                        </Menu.Item>
+                      </Menu.Content>
+                    </Menu.Positioner>
+                  </Portal>
+                </Menu.Root>
               </div>
             ) : (
               // Unauthenticated Navbar

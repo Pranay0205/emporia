@@ -22,9 +22,6 @@ app = Flask(__name__)
 config = configparser.ConfigParser()
 config.read('configs/config.ini')
 app.secret_key = config['server']['secret_key']
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 CORS(app, supports_credentials=True)
 
 

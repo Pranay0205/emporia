@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Box, Button, Container, Heading, Image, Stack, Text, SimpleGrid } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
+import { useNavigate } from "react-router-dom";
 
 interface CartItem {
   product_id: number;
@@ -22,8 +23,9 @@ const CartPage = () => {
   const [cart, setCart] = useState<Cart | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const API_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/cart/`, {
         credentials: "include",
@@ -43,7 +45,7 @@ const CartPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [API_URL]);
 
   const updateQuantity = async (productId: number, newQuantity: number) => {
     try {
@@ -107,7 +109,7 @@ const CartPage = () => {
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
   if (isLoading) {
     return (
@@ -192,7 +194,7 @@ const CartPage = () => {
               <Text>${cart.total_price}</Text>
             </Box>
             <Box pt={4} borderTopWidth={1}>
-              <Button colorScheme="teal" size="lg" width="100%">
+              <Button colorScheme="teal" size="lg" width="100%" onClick={() => navigate("/place-order")}>
                 Proceed to Checkout
               </Button>
             </Box>
