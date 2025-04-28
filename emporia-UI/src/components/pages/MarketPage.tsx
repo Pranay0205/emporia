@@ -27,7 +27,7 @@ const MarketPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const API_URL = import.meta.env.VITE_API_URL;
-  const placeholderImage = "https://placehold.in/300x200@2x.png/dark";
+  const placeholderImage = "https://fakeimg.pl/300x200/030303/43e8c4?text=Product&font=bebas";
   const user = JSON.parse(sessionStorage.getItem("user") || "{}");
 
   const addToCart = async (productId: number) => {

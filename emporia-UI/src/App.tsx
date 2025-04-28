@@ -10,6 +10,7 @@ import MarketPage from "./components/pages/MarketPage";
 import ProductPage from "./components/pages/ProductPage";
 import CartPage from "./components/pages/CartPage";
 import PlaceOrderPage from "./components/pages/PlaceOrderPage";
+import OrderHistoryPage from "./components/pages/OrderHistoryPage";
 
 import { useEffect, useState } from "react";
 
@@ -32,6 +33,7 @@ function App() {
         <Route path="/products" element={<ProductPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/place-order" element={<PlaceOrderPage />} />
+        <Route path="/orders" element={<OrderHistoryPage />} />
       </Routes>
       <Toaster />
     </Router>

@@ -136,6 +136,9 @@ export const Navbar = ({
                   <Portal>
                     <Menu.Positioner>
                       <Menu.Content bg="gray.800" borderColor="gray.700">
+                        <Menu.Item value="orders" _hover={{ bg: "gray.700" }} onClick={() => navigate("/orders")}>
+                          <Text color="white">Order History</Text>
+                        </Menu.Item>
                         <Menu.Item value="profile" _hover={{ bg: "gray.700" }}>
                           <Text color="white">Profile</Text>
                         </Menu.Item>
