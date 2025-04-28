@@ -7,12 +7,14 @@ import {
   Text,
   Menu,
   Portal,
-  Avatar as ChakraAvatar,
   Avatar,
+  Float,
+  Circle,
+  Center,
 } from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
 import { toaster } from "./toaster";
-import { FiShoppingCart, FiUser } from "react-icons/fi";
+import { FiShoppingCart, FiHome, FiGrid, FiPackage } from "react-icons/fi";
 import { useEffect, useState } from "react";
 
 export const Navbar = ({
@@ -49,7 +51,7 @@ export const Navbar = ({
         setUser(JSON.parse(userData));
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, API_URL]);
 
   const handleLogout = () => {
     setTimeout(() => {
@@ -81,40 +83,27 @@ export const Navbar = ({
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 <Link to="/market">
                   <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
-                    Market
+                    <FiHome style={{ marginRight: "8px" }} /> Market
                   </Button>
                 </Link>
                 <Link to="/categories">
                   <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
-                    Categories
+                    <FiGrid style={{ marginRight: "8px" }} /> Categories
                   </Button>
                 </Link>
                 <Link to="/products">
                   <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
-                    Products
+                    <FiPackage style={{ marginRight: "8px" }} /> Products
                   </Button>
                 </Link>
                 <Link to="/cart">
                   <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }} position="relative">
-                    <FiShoppingCart size={20} />
-                    {cartItems > 0 && (
-                      <Box
-                        position="absolute"
-                        top="-2"
-                        right="-2"
-                        bg="teal.400"
-                        color="white"
-                        borderRadius="full"
-                        w="5"
-                        h="5"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        fontSize="xs"
-                      >
-                        {cartItems}
-                      </Box>
-                    )}
+                    <Float placement={"top-end"}>
+                      <Circle size="5" bg="red" color="white">
+                        <Center>{cartItems}</Center>
+                      </Circle>
+                    </Float>
+                    <FiShoppingCart size={20} style={{ marginRight: "8px" }} /> Cart
                   </Button>
                 </Link>
                 <Menu.Root>

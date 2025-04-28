@@ -13,6 +13,7 @@ import PlaceOrderPage from "./components/pages/PlaceOrderPage";
 import OrderHistoryPage from "./components/pages/OrderHistoryPage";
 
 import { useEffect, useState } from "react";
+import PrivateRoute from "./components/routing/PrivateRoutes";
 
 function App() {
   const [isAuth, setIsAuth] = useState(false);
@@ -28,12 +29,14 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage setIsAuth={setIsAuth} />} />
         <Route path="/register" element={<RegistrationRouter />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/market" element={<MarketPage />} />
-        <Route path="/products" element={<ProductPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/place-order" element={<PlaceOrderPage />} />
-        <Route path="/orders" element={<OrderHistoryPage />} />
+        <Route element={<PrivateRoute />}>
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/market" element={<MarketPage />} />
+          <Route path="/products" element={<ProductPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/place-order" element={<PlaceOrderPage />} />
+          <Route path="/orders" element={<OrderHistoryPage />} />
+        </Route>
       </Routes>
       <Toaster />
     </Router>

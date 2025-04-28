@@ -1,19 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  Stack,
-  Text,
-  VStack,
-  NativeSelect,
-  Table,
-  useEditable,
-} from "@chakra-ui/react";
+import { Box, Button, Container, Heading, Stack, Text, VStack, NativeSelect, Table } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
-import { ChangeEvent } from "react";
 
 interface OrderRequest {
   cart_id: number;
@@ -158,8 +146,8 @@ const PlaceOrderPage = () => {
             </Table.Root>
             <NativeSelect.Root
               value={paymentMethod}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) => setPaymentMethod(e.target.value)}
-              variant="subtle"
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPaymentMethod(e.target.value)}
+              variant="outline"
             >
               <NativeSelect.Field placeholder="Select payment method">
                 <option value="Credit/Debit">Credit/Debit Card</option>

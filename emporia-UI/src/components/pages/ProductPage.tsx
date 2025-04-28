@@ -14,6 +14,8 @@ import {
   createListCollection,
   NativeSelect,
   Flex,
+  SimpleGrid,
+  GridItem,
 } from "@chakra-ui/react";
 
 const ProductPage = () => {
@@ -197,195 +199,216 @@ const ProductPage = () => {
   }, [API_URL]);
 
   return (
-    <div>
-      <Box padding="4" textAlign="center">
-        <Text
-          textStyle="7xl"
-          className="flex items-center justify-center"
-          fontWeight="bold"
-          letterSpacing="tight"
-          mt="2"
-        >
-          Your Products
-        </Text>
-      </Box>
-      <Box padding="4" display="flex" justifyContent="space-around" alignItems="center">
-        <Input placeholder="Search products..." size="lg" />
-        <Dialog.Root>
-          <Dialog.Trigger asChild>
-            <Button variant="solid" colorPalette="teal" ml={4}>
-              Add Product
-            </Button>
-          </Dialog.Trigger>
-          <Portal>
-            <Dialog.Backdrop />
-            <Dialog.Positioner>
-              <Dialog.Content>
-                <Dialog.Header>
-                  <Dialog.Title textStyle="3xl">Add New Product</Dialog.Title>
-                  <Dialog.CloseTrigger asChild>
-                    <CloseButton size="md" />
-                  </Dialog.CloseTrigger>
-                </Dialog.Header>
-                <Dialog.Body>
-                  <form onSubmit={handleSubmit}>
-                    <Field.Root required mb="4">
-                      <Field.Label mb="2">
-                        Product Name
-                        <Field.RequiredIndicator />
-                      </Field.Label>
-                      <Input
-                        name="name"
-                        value={newProduct.name}
-                        onChange={(e) =>
-                          setNewProduct((prev) => ({
-                            ...prev,
-                            name: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter product name"
-                      />
-                    </Field.Root>
-
-                    <Field.Root required mb="4">
-                      <Field.Label mb="2">
-                        Description
-                        <Field.RequiredIndicator />
-                      </Field.Label>
-                      <Input
-                        name="description"
-                        value={newProduct.description}
-                        onChange={(e) =>
-                          setNewProduct((prev) => ({
-                            ...prev,
-                            description: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter product description"
-                      />
-                    </Field.Root>
-
-                    <Field.Root required mb="4">
-                      <Field.Label mb="2">
-                        Price
-                        <Field.RequiredIndicator />
-                      </Field.Label>
-                      <Input
-                        name="price"
-                        type="number"
-                        value={newProduct.price}
-                        onChange={(e) =>
-                          setNewProduct((prev) => ({
-                            ...prev,
-                            price: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter price"
-                      />
-                    </Field.Root>
-
-                    <Field.Root required>
-                      <Field.Label>
-                        Category
-                        <Field.RequiredIndicator />
-                      </Field.Label>
-                      <NativeSelect.Root>
-                        <NativeSelect.Field
-                          placeholder="Select category"
-                          mb="4"
-                          onChange={(e) => setNewProduct((prev) => ({ ...prev, category_id: e.target.value }))}
-                        >
-                          {categoryCollection.items.map((category) => (
-                            <option value={category.value} key={category.value}>
-                              {category.label}
-                            </option>
-                          ))}
-                        </NativeSelect.Field>
-                      </NativeSelect.Root>
-                    </Field.Root>
-
-                    <Field.Root required mb="4">
-                      <Field.Label mb="2">
-                        Stock
-                        <Field.RequiredIndicator />
-                      </Field.Label>
-                      <Input
-                        name="stock"
-                        type="number"
-                        value={newProduct.stock}
-                        onChange={(e) =>
-                          setNewProduct((prev) => ({
-                            ...prev,
-                            stock: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter stock quantity"
-                      />
-                    </Field.Root>
-
-                    <Field.Root required mb="4">
-                      <Field.Label mb="2">Image URL</Field.Label>
-                      <Input
-                        name="imageUrl"
-                        value={newProduct.imageUrl}
-                        onChange={(e) =>
-                          setNewProduct((prev) => ({
-                            ...prev,
-                            imageUrl: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter image URL"
-                      />
-                    </Field.Root>
-                  </form>
-                </Dialog.Body>
-                <Dialog.Footer>
-                  <Button variant="solid" colorPalette="teal" onClick={handleSubmit}>
-                    Create Product
+    <>
+      {user && user.role === "seller" ? (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+          <Box padding="4" textAlign="center">
+            <Text
+              textStyle="7xl"
+              className="flex items-center justify-center"
+              fontWeight="bold"
+              letterSpacing="tight"
+              mt="2"
+            >
+              Your Products
+            </Text>
+          </Box>
+          <SimpleGrid columns={{ xl: 10 }} gap={10} padding="4" m="4">
+            <GridItem colSpan={{ xl: 9 }}>
+              <Input placeholder="Search products..." size="lg" />
+            </GridItem>
+            <GridItem colSpan={{ xl: 1 }}>
+              <Dialog.Root>
+                <Dialog.Trigger asChild>
+                  <Button variant="solid" colorPalette="teal" ml={4}>
+                    Add Product
                   </Button>
-                </Dialog.Footer>
-              </Dialog.Content>
-            </Dialog.Positioner>
-          </Portal>
-        </Dialog.Root>
-      </Box>
-      <>
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : products.length > 0 ? (
-          <Flex justifyContent="space-evenly" alignItems="start" gap={2} wrap="wrap">
-            {products.map((product) => (
-              <Box key={product.id} margin="4" maxW={500} height={600} borderRadius="lg">
-                <Card.Root overflow="hidden">
-                  <Image
-                    src={product.imageUrl || "https://fakeimg.pl/400x300/000000/5cf2ca?text=Product+Image&font=bebas"}
-                    alt={product.name}
-                  />
-                  <Card.Body gap="2">
-                    <Card.Title textStyle="3xl">{product.name}</Card.Title>
-                    <Card.Description textStyle="sm">{product.description}</Card.Description>
-                    <Text textStyle="2xl" fontWeight="medium" letterSpacing="tight" mt="2">
-                      ${product.price}
-                    </Text>
-                    <Text>Stock: {product.stock}</Text>
-                  </Card.Body>
-                  <Card.Footer gap="2">
-                    <Button variant="solid" colorPalette="teal">
-                      Update
-                    </Button>
-                    <Button variant="solid" colorPalette="red">
-                      Delete
-                    </Button>
-                  </Card.Footer>
-                </Card.Root>
-              </Box>
-            ))}
-          </Flex>
-        ) : (
-          <p>No products found.</p>
-        )}
-      </>
-    </div>
+                </Dialog.Trigger>
+                <Portal>
+                  <Dialog.Backdrop />
+                  <Dialog.Positioner>
+                    <Dialog.Content>
+                      <Dialog.Header>
+                        <Dialog.Title textStyle="3xl">Add New Product</Dialog.Title>
+                        <Dialog.CloseTrigger asChild>
+                          <CloseButton size="md" />
+                        </Dialog.CloseTrigger>
+                      </Dialog.Header>
+                      <Dialog.Body>
+                        <form onSubmit={handleSubmit}>
+                          <Field.Root required mb="4">
+                            <Field.Label mb="2">
+                              Product Name
+                              <Field.RequiredIndicator />
+                            </Field.Label>
+                            <Input
+                              name="name"
+                              value={newProduct.name}
+                              onChange={(e) =>
+                                setNewProduct((prev) => ({
+                                  ...prev,
+                                  name: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter product name"
+                            />
+                          </Field.Root>
+
+                          <Field.Root required mb="4">
+                            <Field.Label mb="2">
+                              Description
+                              <Field.RequiredIndicator />
+                            </Field.Label>
+                            <Input
+                              name="description"
+                              value={newProduct.description}
+                              onChange={(e) =>
+                                setNewProduct((prev) => ({
+                                  ...prev,
+                                  description: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter product description"
+                            />
+                          </Field.Root>
+
+                          <Field.Root required mb="4">
+                            <Field.Label mb="2">
+                              Price
+                              <Field.RequiredIndicator />
+                            </Field.Label>
+                            <Input
+                              name="price"
+                              type="number"
+                              value={newProduct.price}
+                              onChange={(e) =>
+                                setNewProduct((prev) => ({
+                                  ...prev,
+                                  price: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter price"
+                            />
+                          </Field.Root>
+
+                          <Field.Root required>
+                            <Field.Label>
+                              Category
+                              <Field.RequiredIndicator />
+                            </Field.Label>
+                            <NativeSelect.Root>
+                              <NativeSelect.Field
+                                placeholder="Select category"
+                                mb="4"
+                                onChange={(e) => setNewProduct((prev) => ({ ...prev, category_id: e.target.value }))}
+                              >
+                                {categoryCollection.items.map((category) => (
+                                  <option value={category.value} key={category.value}>
+                                    {category.label}
+                                  </option>
+                                ))}
+                              </NativeSelect.Field>
+                            </NativeSelect.Root>
+                          </Field.Root>
+
+                          <Field.Root required mb="4">
+                            <Field.Label mb="2">
+                              Stock
+                              <Field.RequiredIndicator />
+                            </Field.Label>
+                            <Input
+                              name="stock"
+                              type="number"
+                              value={newProduct.stock}
+                              onChange={(e) =>
+                                setNewProduct((prev) => ({
+                                  ...prev,
+                                  stock: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter stock quantity"
+                            />
+                          </Field.Root>
+
+                          <Field.Root required mb="4">
+                            <Field.Label mb="2">Image URL</Field.Label>
+                            <Input
+                              name="imageUrl"
+                              value={newProduct.imageUrl}
+                              onChange={(e) =>
+                                setNewProduct((prev) => ({
+                                  ...prev,
+                                  imageUrl: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter image URL"
+                            />
+                          </Field.Root>
+                        </form>
+                      </Dialog.Body>
+                      <Dialog.Footer>
+                        <Button variant="solid" colorPalette="teal" onClick={handleSubmit}>
+                          Create Product
+                        </Button>
+                      </Dialog.Footer>
+                    </Dialog.Content>
+                  </Dialog.Positioner>
+                </Portal>
+              </Dialog.Root>
+            </GridItem>
+          </SimpleGrid>
+          <>
+            {isLoading ? (
+              <p>Loading...</p>
+            ) : products.length > 0 ? (
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} gap={4} padding="4">
+                {products.map((product) => (
+                  <Box key={product.id} margin="4" maxW={500} height={600} borderRadius="lg">
+                    <Card.Root overflow="hidden">
+                      <Image
+                        src={
+                          product.imageUrl || "https://fakeimg.pl/400x300/000000/5cf2ca?text=Product+Image&font=bebas"
+                        }
+                        alt={product.name}
+                      />
+                      <Card.Body gap="2">
+                        <Card.Title textStyle="3xl">{product.name}</Card.Title>
+                        <Card.Description textStyle="sm">{product.description}</Card.Description>
+                        <Text textStyle="2xl" fontWeight="medium" letterSpacing="tight" mt="2">
+                          ${product.price}
+                        </Text>
+                        <Text>Stock: {product.stock}</Text>
+                      </Card.Body>
+                      <Card.Footer gap="2">
+                        <Button variant="solid" colorPalette="teal">
+                          Update
+                        </Button>
+                        <Button variant="solid" colorPalette="red">
+                          Delete
+                        </Button>
+                      </Card.Footer>
+                    </Card.Root>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            ) : (
+              <p>No products found.</p>
+            )}
+          </>
+        </div>
+      ) : (
+        <div>
+          <Box textAlign="center" mt="10">
+            <Text textStyle="4xl" color="red.500" fontWeight="bold">
+              Access Denied!
+            </Text>
+            <Text textStyle="xl" color="gray.600" mt="4">
+              You must be logged in as a seller to view this page.
+            </Text>
+          </Box>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Container, Heading, Text, Stack, Badge, Button, SimpleGrid } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
+import { useNavigate } from "react-router-dom";
 
 interface OrderItem {
   product_id: number;
@@ -21,6 +22,7 @@ interface Order {
 const OrderHistoryPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
   const fetchOrders = async () => {
@@ -73,12 +75,12 @@ const OrderHistoryPage = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "paid":
+    switch (status.toUpperCase()) {
+      case "PAID":
         return "green";
-      case "processing":
+      case "PROCESSING":
         return "blue";
-      case "cancelled":
+      case "CANCELLED":
         return "red";
       default:
         return "gray";
@@ -105,7 +107,7 @@ const OrderHistoryPage = () => {
             No Orders Yet
           </Heading>
           <Text mb={4}>You haven't placed any orders yet.</Text>
-          <Button colorScheme="teal" onClick={() => (window.location.href = "/market")}>
+          <Button colorScheme="teal" onClick={() => navigate("/market")}>
             Start Shopping
           </Button>
         </Box>
@@ -117,8 +119,8 @@ const OrderHistoryPage = () => {
     <Container maxW="container.xl" py={8}>
       <Heading mb={6}>Order History</Heading>
       <Stack gap={6}>
-        {orders.map((order) => (
-          <Box key={order.order_id} p={6} borderWidth={1} borderRadius="lg" bg="gray.800">
+        {orders.map((order, index) => (
+          <Box key={index} p={6} borderWidth={1} borderRadius="lg" bg="gray.800">
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={4} mb={4}>
               <Stack>
                 <Text fontSize="sm" color="gray.400">
@@ -130,7 +132,7 @@ const OrderHistoryPage = () => {
               </Stack>
               <Stack align={{ base: "start", md: "end" }}>
                 <Badge colorPalette={getStatusColor(order.status)} variant="solid" fontSize="0.8em" px={2} py={1}>
-                  {order.status}
+                  {order.status.toUpperCase()}
                 </Badge>
                 <Text fontWeight="bold">Total: ${order.total_amount}</Text>
               </Stack>
@@ -147,14 +149,19 @@ const OrderHistoryPage = () => {
                 </SimpleGrid>
               ))}
             </Stack>
-
-            {order.status.toLowerCase() !== "cancelled" && (
-              <Box mt={4}>
-                <Button colorPalette="red" variant="solid" size="sm" onClick={() => cancelOrder(order.order_id)}>
+            <Box divideX="true" mt={4} borderTopWidth={1} borderColor="gray.700">
+              <Box mt={4} right={{ base: "0", md: "4" }} textAlign={{ base: "center", md: "right" }}>
+                <Button
+                  colorPalette="red"
+                  variant="solid"
+                  size="sm"
+                  onClick={() => cancelOrder(order.order_id)}
+                  disabled={order.status.toLowerCase() === "cancelled"}
+                >
                   Cancel Order
                 </Button>
               </Box>
-            )}
+            </Box>
           </Box>
         ))}
       </Stack>
