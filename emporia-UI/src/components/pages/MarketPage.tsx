@@ -28,6 +28,38 @@ const MarketPage = () => {
 
   const API_URL = import.meta.env.VITE_API_URL;
   const placeholderImage = "https://placehold.in/300x200@2x.png/dark";
+  const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+
+  const addToCart = async (productId: number) => {
+    try {
+      const response = await fetch(`${API_URL}/cart/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ cart_id: 0, product_id: productId, quantity: 1, customer_id: user.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add item to cart");
+      }
+
+      await response.json();
+      toaster.create({
+        type: "success",
+        title: "Success",
+        description: "Item added to cart successfully",
+      });
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
+      toaster.create({
+        type: "error",
+        title: "Error",
+        description: "Failed to add item to cart",
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,8 +123,10 @@ const MarketPage = () => {
           {/* Category Filter */}
           <Box>
             <Select.Root
-              selectedValues={[selectedCategory]}
-              onSelectedValuesChange={(values: string[]) => setSelectedCategory(values[0] || "all")}
+              defaultValue={[selectedCategory]}
+              onValueChange={(details) =>
+                setSelectedCategory(Array.isArray(details.value) ? details.value[0] : details.value)
+              }
               collection={categoryCollection}
               size="lg"
             >
@@ -155,7 +189,12 @@ const MarketPage = () => {
                       <Text color="gray.400" fontSize="sm">
                         Stock: {product.stock}
                       </Text>
-                      <Button colorScheme="teal" size="sm" disabled={product.stock === 0}>
+                      <Button
+                        colorScheme="teal"
+                        size="sm"
+                        disabled={product.stock === 0}
+                        onClick={() => addToCart(product.id)}
+                      >
                         {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
                       </Button>
                     </Stack>

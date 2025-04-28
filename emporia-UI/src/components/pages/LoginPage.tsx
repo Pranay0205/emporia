@@ -60,7 +60,7 @@ const LoginPage = ({ setIsAuth }: LoginPageProps) => {
       sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
 
       setTimeout(() => {
-        navigate("/");
+        navigate("/market");
         setIsAuth(true);
         toaster.create({
           type: "success",

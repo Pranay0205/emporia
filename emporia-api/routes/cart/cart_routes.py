@@ -3,19 +3,17 @@ from flask import Blueprint, current_app, request, jsonify, session
 
 cart_bp = Blueprint('cart', __name__, url_prefix='/cart')
 
+
 @cart_bp.route('/', methods=['GET'])
 def get_cart():
     """Get the current user's shopping cart"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-            
+
         customer_id = session.get('customer_id')
-        
+
         # Get or create cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
-        
+
         return jsonify({
             'cart': {
                 'cart_id': cart.cart_id,
@@ -34,6 +32,7 @@ def get_cart():
     except Exception as e:
         return jsonify({'message': f'Error retrieving cart: {str(e)}'}), 500
 
+
 @cart_bp.route('/items', methods=['POST'])
 def add_to_cart():
     """Add an item to the shopping cart"""
@@ -41,30 +40,30 @@ def add_to_cart():
         # Check if user is authenticated
         if not session.get('is_authenticated'):
             return jsonify({'message': 'Authentication required'}), 401
-            
+
         data = request.get_json()
         if not data:
             return jsonify({'message': 'No data provided'}), 400
-            
+
         product_id = data.get('product_id')
         quantity = data.get('quantity', 1)
-        
+
         if not product_id:
             return jsonify({'message': 'Product ID is required'}), 400
-            
+
         customer_id = session.get('customer_id')
-        
+
         # Get or create cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
-        
+
         # Add item to cart
         updated_cart = current_app.cart_service.add_item(
-            cart.cart_id, 
-            product_id, 
+            cart.cart_id,
+            product_id,
             quantity,
             customer_id
         )
-        
+
         return jsonify({
             'message': 'Item added to cart',
             'cart': {
@@ -86,6 +85,7 @@ def add_to_cart():
     except Exception as e:
         return jsonify({'message': f'Error adding item to cart: {str(e)}'}), 500
 
+
 @cart_bp.route('/items/<int:product_id>', methods=['PUT'])
 def update_cart_item(product_id):
     """Update an item's quantity in the shopping cart"""
@@ -93,29 +93,29 @@ def update_cart_item(product_id):
         # Check if user is authenticated
         if not session.get('is_authenticated'):
             return jsonify({'message': 'Authentication required'}), 401
-            
+
         data = request.get_json()
         if not data:
             return jsonify({'message': 'No data provided'}), 400
-            
+
         quantity = data.get('quantity')
-        
+
         if quantity is None:
             return jsonify({'message': 'Quantity is required'}), 400
-            
+
         customer_id = session.get('customer_id')
-        
+
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
-        
+
         # Update item in cart
         updated_cart = current_app.cart_service.update_item(
-            cart.cart_id, 
-            product_id, 
+            cart.cart_id,
+            product_id,
             quantity,
             customer_id
         )
-        
+
         return jsonify({
             'message': 'Cart item updated',
             'cart': {
@@ -137,6 +137,7 @@ def update_cart_item(product_id):
     except Exception as e:
         return jsonify({'message': f'Error updating cart item: {str(e)}'}), 500
 
+
 @cart_bp.route('/items/<int:product_id>', methods=['DELETE'])
 def remove_from_cart(product_id):
     """Remove an item from the shopping cart"""
@@ -144,19 +145,19 @@ def remove_from_cart(product_id):
         # Check if user is authenticated
         if not session.get('is_authenticated'):
             return jsonify({'message': 'Authentication required'}), 401
-            
+
         customer_id = session.get('customer_id')
-        
+
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
-        
+
         # Remove item from cart
         updated_cart = current_app.cart_service.remove_item(
-            cart.cart_id, 
+            cart.cart_id,
             product_id,
             customer_id
         )
-        
+
         return jsonify({
             'message': 'Item removed from cart',
             'cart': {
@@ -178,6 +179,7 @@ def remove_from_cart(product_id):
     except Exception as e:
         return jsonify({'message': f'Error removing item from cart: {str(e)}'}), 500
 
+
 @cart_bp.route('/', methods=['DELETE'])
 def clear_cart():
     """Clear the shopping cart"""
@@ -185,15 +187,16 @@ def clear_cart():
         # Check if user is authenticated
         if not session.get('is_authenticated'):
             return jsonify({'message': 'Authentication required'}), 401
-            
+
         customer_id = session.get('customer_id')
-        
+
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
-        
+
         # Clear cart
-        empty_cart = current_app.cart_service.clear_cart(cart.cart_id, customer_id)
-        
+        empty_cart = current_app.cart_service.clear_cart(
+            cart.cart_id, customer_id)
+
         return jsonify({
             'message': 'Cart cleared',
             'cart': {

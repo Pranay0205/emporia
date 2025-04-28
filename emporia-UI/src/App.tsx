@@ -8,6 +8,7 @@ import { Navbar } from "./components/ui/navbar";
 import CategoriesPage from "./components/pages/CategoriesPage";
 import MarketPage from "./components/pages/MarketPage";
 import ProductPage from "./components/pages/ProductPage";
+import CartPage from "./components/pages/CartPage";
 
 import { useEffect, useState } from "react";
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/market" element={<MarketPage />} />
         <Route path="/products" element={<ProductPage />} />
+        <Route path="/cart" element={<CartPage />} />
       </Routes>
       <Toaster />
     </Router>
