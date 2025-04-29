@@ -1,4 +1,3 @@
-# In user_registry.py
 from models.Users.Admin import Admin
 from models.Users.Seller import Seller
 from models.Users.Customer import Customer

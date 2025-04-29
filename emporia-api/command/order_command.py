@@ -1,4 +1,3 @@
-# emporia-api/patterns/command/order_command.py
 from abc import ABC, abstractmethod
 
 

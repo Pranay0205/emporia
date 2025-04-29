@@ -1,4 +1,3 @@
-# emporia-api/patterns/command/order_commands.py
 from datetime import datetime
 from command.order_command import OrderCommand
 from models.Order.Order import Order

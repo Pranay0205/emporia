@@ -1,4 +1,3 @@
-# emporia-api/patterns/command/order_invoker.py
 class OrderInvoker:
 
     def __init__(self):
