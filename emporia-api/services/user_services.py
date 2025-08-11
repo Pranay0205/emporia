@@ -1,21 +1,16 @@
-from multiprocessing import Value
-import re
-from flask import jsonify, session
-from factories.UserFactory.UserFactory import UserFactory
-from repositories.database.db_connection import DatabaseConnection
-from repositories.database.db_user_repo import DBUserRepo
-from models.Users.User import User
-from models.Users.Seller import Seller  # Import the Seller class
-from models.Users.Admin import Admin  # Import the Admin class
-from models.Users.Customer import Customer  # Import the Customer class
 import hashlib
-
+from models.Users.User import User
+from models.Users.Seller import Seller
+from models.Users.Admin import Admin
+from models.Users.Customer import Customer
+from factories.UserFactory.UserFactory import UserFactory
+from utils.jwt_utils import JWTManager
 
 class UserService:
-
     def __init__(self, user_repository):
         self.user_repository = user_repository
-
+        self.jwt_manager = JWTManager()
+    
     def register_user(self, user_data):
         try:
             # Validate user data
@@ -137,113 +132,61 @@ class UserService:
 
         except Exception as e:
             raise ValueError(f"Failed to convert array to Admin: {str(e)}")
-
+    
     def authenticate_user(self, username, password):
-
-        # Get user from repository
-        is_authenticated = False
+        """Authenticate user and return JWT token"""
         try:
-            if username == None or password == None:
-                raise ValueError("Username and password cannot be None")
-
-            if username == "" or password == "":
+            if not username or not password:
                 raise ValueError("Username and password cannot be empty")
 
             raw_user = self.user_repository.get_user_by_username(username)
-
             if not raw_user:
                 raise ValueError("User not found")
 
             user = self._convert_array_to_user(raw_user)
-
-            print(user.to_json())
+            
             # Hash the provided password
-            hashed_password = hashlib.sha256(
-                password.encode("utf-8")).hexdigest()
-
+            hashed_password = hashlib.sha256(password.encode("utf-8")).hexdigest()
+            
             # Verify password
             if user.password != hashed_password:
                 raise ValueError("Invalid password")
             
-            is_authenticated = True
-            session['is_authenticated'] = True
-            session['role'] = user.role
-            session['user_id'] = user.id
-
-            if user.role == 'seller':
-                seller = self.user_repository.get_seller_by_username(
-                    user.id)
-                print(seller)
-                seller = self._convert_array_to_seller(seller, user)
-                session['seller_id'] = seller.seller_id
-            elif (user.role == 'admin'):
+            # Prepare token data
+            token_data = {
+                'user_id': user.id,
+                'role': user.role,
+                'username': user.user_name,
+                'email': user.email
+            }
+            
+            # Add role-specific data
+            if user.role == 'customer':
+                customer = self.user_repository.get_customer_by_username(user.id)
+                if customer:
+                    customer_obj = self._convert_array_to_customer(customer, user)
+                    token_data['customer_id'] = customer_obj.customer_id
+                    
+            elif user.role == 'seller':
+                seller = self.user_repository.get_seller_by_username(user.id)
+                if seller:
+                    seller_obj = self._convert_array_to_seller(seller, user)
+                    token_data['seller_id'] = seller_obj.seller_id
+                    
+            elif user.role == 'admin':
                 admin = self.user_repository.get_admin_by_username(user.id)
-                admin = self._convert_array_to_admin(admin, user)
-                session['admin_id'] = admin.admin_id
-            elif (user.role == 'customer'):
-                customer = self.user_repository.get_customer_by_username(
-                    user.id)
-                customer = self._convert_array_to_customer(customer, user)
-                session['customer_id'] = customer.customer_id
-            else:
-                raise ValueError("Invalid role")
-
-            return is_authenticated, user.to_json()
-
-        except ValueError as e:
-            raise ValueError(f"DJlkfjsdkljflk: {str(e)}")
+                if admin:
+                    admin_obj = self._convert_array_to_admin(admin, user)
+                    token_data['admin_id'] = admin_obj.admin_id
+            
+            # Create JWT token
+            access_token = self.jwt_manager.create_access_token(token_data)
+            
+            return True, {
+                'access_token': access_token,
+                'token_type': 'bearer',
+                'user': user.to_json()
+            }
+            
         except Exception as e:
             raise ValueError(f"Authentication failed: {str(e)}")
-
-    def get_user(self, username):
-        user = self.user_repository.get_user_by_username(username)
-        if not user:
-            raise ValueError("User not found")
-        return user
-
-    def _validate_user(self, user_data):
-        required_fields = ["role", "first_name",
-                           "user_name", "email", "password"]
-
-        for field in required_fields:
-            if field not in user_data:
-                raise ValueError(f"Missing required field: {field}")
-
-        if not re.match(r"^[A-Za-z]+$", user_data['first_name']):
-            raise ValueError("First name can only contain letters")
-
-        if not re.match(r"^[A-Za-z]+$", user_data['last_name']):
-            raise ValueError("Last name can only contain letters")
-
-        if not re.match(r"^[A-Za-z0-9_]+$", user_data['user_name']):
-            raise ValueError(
-                "Username can only contain letters, numbers, and underscores")
-
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", user_data['email']):
-            raise ValueError("Invalid email format")
-
-        if len(user_data['password']) < 8:
-            raise ValueError("Password must be at least 8 characters")
-
-        # Role-specific validations
-
-        # Customer
-        if user_data['role'] == 'customer':
-            if 'address' not in user_data:
-                raise ValueError("Address is required for customers")
-
-            if 'phone_number' not in user_data:
-                raise ValueError("Phone is required for customers")
-
-        # Seller
-        if user_data['role'] == 'seller':
-            if 'store_name' not in user_data:
-                raise ValueError("Store Name is required for sellers")
-
-            if 'store_desc' not in user_data:
-                raise ValueError("Store Description is required for sellers")
-
-        # Admin
-        if user_data['role'] == 'admin':
-            if 'permissions' not in user_data:
-                raise ValueError("Permissions are required for admins")

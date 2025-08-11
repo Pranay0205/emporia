@@ -1,11 +1,12 @@
-from flask import Blueprint,  current_app, request, jsonify, session
+from flask import Blueprint, current_app, request, jsonify
+from utils.auth_decorators import token_required, role_required
 
 product_bp = Blueprint('products', __name__, url_prefix='/products')
 
 
 @product_bp.route('/', methods=['GET'])
 def get_all_products():
-
+    """Get all products - no authentication required for browsing"""
     try:
         limit = request.args.get('limit', 100, type=int)
         offset = request.args.get('offset', 0, type=int)
@@ -18,7 +19,7 @@ def get_all_products():
 
 @product_bp.route('/<int:product_id>', methods=['GET'])
 def get_product(product_id):
-
+    """Get single product - no authentication required"""
     try:
         product = current_app.product_service.get_product_by_id(product_id)
         return jsonify({'product': product}), 200
@@ -30,10 +31,9 @@ def get_product(product_id):
 
 @product_bp.route('/category/<int:category_id>', methods=['GET'])
 def get_products_by_category(category_id):
-
+    """Get products by category - no authentication required"""
     try:
-        products = current_app.product_service.get_products_by_category(
-            category_id)
+        products = current_app.product_service.get_products_by_category(category_id)
         return jsonify({'products': products}), 200
     except Exception as e:
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500
@@ -41,26 +41,25 @@ def get_products_by_category(category_id):
 
 @product_bp.route('/seller/<int:seller_id>', methods=['GET'])
 def get_products_by_seller(seller_id):
-
+    """Get products by seller - no authentication required"""
     try:
-        products = current_app.product_service.get_products_by_seller(
-            seller_id)
+        products = current_app.product_service.get_products_by_seller(seller_id)
         return jsonify({'products': products}), 200
     except Exception as e:
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500
 
 
 @product_bp.route('/', methods=['POST'])
+@role_required('seller')
 def create_product():
     """Create a new product - requires authenticated seller"""
     try:
-        print(f"session auth : {session.get('is_authenticated')}")
         data = request.get_json()
-        print(data)
         if not data:
             return jsonify({'message': 'No data provided'}), 400
 
-        seller_id = session.get('seller_id')  # Get seller_id from session
+        # Get seller info from JWT token
+        seller_id = request.current_user.get('seller_id') or request.current_user.get('user_id')
         product = current_app.product_service.create_product(data, seller_id)
 
         return jsonify({
@@ -83,23 +82,17 @@ def create_product():
 
 
 @product_bp.route('/<int:product_id>', methods=['PUT'])
+@role_required('seller')
 def update_product(product_id):
     """Update a product - requires authenticated seller who owns the product"""
     try:
-        # Check if user is authenticated and is a seller 
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        if session.get('role') != 'seller':
-            return jsonify({'message': 'Only sellers can update products'}), 403
-
         data = request.get_json()
         if not data:
             return jsonify({'message': 'No data provided'}), 400
 
-        seller_id = session.get('user_id')  # Get seller_id from session
-        product = current_app.product_service.update_product(
-            product_id, data, seller_id)
+        # Get seller info from JWT token
+        seller_id = request.current_user.get('seller_id') or request.current_user.get('user_id')
+        product = current_app.product_service.update_product(product_id, data, seller_id)
 
         return jsonify({
             'message': 'Product updated successfully',
@@ -118,19 +111,18 @@ def update_product(product_id):
 
 
 @product_bp.route('/<int:product_id>', methods=['DELETE'])
+@token_required
 def delete_product(product_id):
     """Delete a product - requires authenticated seller who owns the product or admin"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
+        user_role = request.current_user.get('role')
+        
         # If user is admin, they can delete any product
-        if session.get('role') == 'admin':
+        if user_role == 'admin':
             current_app.product_service.delete_product(product_id)
         # If user is seller, they can only delete their own products
-        elif session.get('role') == 'seller':
-            seller_id = session.get('user_id')
+        elif user_role == 'seller':
+            seller_id = request.current_user.get('seller_id') or request.current_user.get('user_id')
             current_app.product_service.delete_product(product_id, seller_id)
         else:
             return jsonify({'message': 'Only sellers or admins can delete products'}), 403

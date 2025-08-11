@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Box, Button, Container, Heading, Image, Stack, Text, SimpleGrid } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { useNavigate } from "react-router-dom";
+import TokenManager from "../../utils/tokenManager";
 
 interface CartItem {
   product_id: number;
@@ -27,12 +28,24 @@ const CartPage = () => {
 
   const fetchCart = useCallback(async () => {
     try {
+      // Updated: Use JWT token instead of credentials
       const response = await fetch(`${API_URL}/cart/`, {
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...TokenManager.getAuthHeader(), // Add JWT token to header
+        },
       });
+      
       if (!response.ok) {
+        // Handle 401 unauthorized
+        if (response.status === 401) {
+          TokenManager.removeToken();
+          navigate('/login');
+          return;
+        }
         throw new Error("Failed to fetch cart");
       }
+      
       const data = await response.json();
       setCart(data.cart);
     } catch (error) {
@@ -45,20 +58,27 @@ const CartPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [API_URL]);
+  }, [API_URL, navigate]);
 
   const updateQuantity = async (productId: number, newQuantity: number) => {
     try {
+      // Updated: Use JWT token instead of credentials
       const response = await fetch(`${API_URL}/cart/items/${productId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...TokenManager.getAuthHeader(), // Add JWT token to header
         },
-        credentials: "include",
         body: JSON.stringify({ quantity: newQuantity }),
       });
 
       if (!response.ok) {
+        // Handle 401 unauthorized
+        if (response.status === 401) {
+          TokenManager.removeToken();
+          navigate('/login');
+          return;
+        }
         throw new Error("Failed to update quantity");
       }
 
@@ -81,17 +101,27 @@ const CartPage = () => {
 
   const removeItem = async (productId: number) => {
     try {
+      // Updated: Use JWT token instead of credentials
       const response = await fetch(`${API_URL}/cart/items/${productId}`, {
         method: "DELETE",
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...TokenManager.getAuthHeader(), // Add JWT token to header
+        },
       });
 
       if (!response.ok) {
+        // Handle 401 unauthorized
+        if (response.status === 401) {
+          TokenManager.removeToken();
+          navigate('/login');
+          return;
+        }
         throw new Error("Failed to remove item");
       }
 
-      const data = await response.json();
-      setCart(data.cart);
+      // Refresh cart after successful removal
+      await fetchCart();
       toaster.create({
         type: "success",
         title: "Success",
@@ -108,8 +138,13 @@ const CartPage = () => {
   };
 
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    // Check if user is authenticated before fetching cart
+    if (TokenManager.isAuthenticated()) {
+      fetchCart();
+    } else {
+      navigate('/login');
+    }
+  }, [fetchCart, navigate]);
 
   if (isLoading) {
     return (
@@ -127,7 +162,7 @@ const CartPage = () => {
             Your Cart is Empty
           </Heading>
           <Text mb={4}>Start shopping to add items to your cart!</Text>
-          <Button colorScheme="teal" onClick={() => (window.location.href = "/market")}>
+          <Button colorScheme="teal" onClick={() => navigate("/market")}>
             Go to Market
           </Button>
         </Box>

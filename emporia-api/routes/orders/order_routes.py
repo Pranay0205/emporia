@@ -1,23 +1,19 @@
-# emporia-api/routes/orders/order_routes.py
-from flask import Blueprint, current_app, request, jsonify, session
+from flask import Blueprint, current_app, request, jsonify
+from utils.auth_decorators import token_required, role_required
 
 order_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
 
 @order_bp.route('/', methods=['POST'])
+@role_required('customer')
 def place_order():
-
+    """Place a new order"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
         data = request.get_json()
-        print(data)
         if not data:
             return jsonify({'message': 'No data provided'}), 400
 
-        customer_id = session.get('customer_id')
+        customer_id = request.current_user.get('customer_id')
         cart_id = data.get('cart_id')
         payment_method = data.get('payment_method')
 
@@ -31,11 +27,9 @@ def place_order():
             payment_method
         )
 
-        print("Result from order service:", result)
         if result['success']:
             # Clear the cart after successful order
             current_app.cart_service.clear_cart(cart_id)
-
             return jsonify({
                 'message': result['message'],
                 'order_id': result['order_id']
@@ -50,34 +44,23 @@ def place_order():
 
 
 @order_bp.route('/', methods=['GET'])
+@role_required('customer')
 def get_customer_orders():
-
+    """Get all orders for current customer"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        customer_id = session.get('customer_id')
-
-        # Get all orders for customer
+        customer_id = request.current_user.get('customer_id')
         orders = current_app.order_service.get_customer_orders(customer_id)
-
         return jsonify({'orders': orders}), 200
     except Exception as e:
         return jsonify({'message': f'Error retrieving orders: {str(e)}'}), 500
 
 
 @order_bp.route('/<int:order_id>', methods=['GET'])
+@role_required('customer')
 def get_order(order_id):
-
+    """Get specific order"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        customer_id = session.get('customer_id')
-
-        # Get order
+        customer_id = request.current_user.get('customer_id')
         order = current_app.order_service.get_order(order_id, customer_id)
 
         if not order:
@@ -89,14 +72,11 @@ def get_order(order_id):
 
 
 @order_bp.route('/<int:order_id>/cancel', methods=['POST'])
+@role_required('customer')
 def cancel_order(order_id):
-
+    """Cancel an order"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        customer_id = session.get('customer_id')
+        customer_id = request.current_user.get('customer_id')
 
         # Cancel order
         result = current_app.order_service.cancel_order(order_id, customer_id)

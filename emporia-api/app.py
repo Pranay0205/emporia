@@ -1,8 +1,10 @@
-import re
-from flask import config, request
-from flask import Flask
-from flask_session import Session  # ✅ ADD THIS IMPORT
+# emporia-api/app.py
 import os
+from flask import Flask
+from dotenv import load_dotenv
+from flask_cors import CORS
+
+# Import your existing modules
 from reg import User_Registry
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
@@ -17,32 +19,27 @@ from services.payment_services import PaymentService
 from services.cart_services import CartService
 from repositories.database.db_cart_repo import DBCartRepo
 from routes import register_blueprints
-import configparser
-from flask_cors import CORS
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-config = configparser.ConfigParser()
-config.read('configs/config.ini')
 
+# Basic Flask configuration (removed all session-related config)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-app.secret_key = config['server']['secret_key']
-app.config['SESSION_TYPE'] = 'filesystem'  # Store sessions as files
-app.config['SESSION_PERMANENT'] = False    # Sessions expire when browser closes
-app.config['SESSION_USE_SIGNER'] = True    # Sign session cookies for security
-app.config['SESSION_KEY_PREFIX'] = 'emporia:'  # Prefix for session keys
-app.config['SESSION_FILE_DIR'] = './flask_session'  # Directory for session files
-app.config['SESSION_FILE_THRESHOLD'] = 500  # Max number of session files
+# JWT Configuration (these will be used by the JWT utility)
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
 
-
-if not os.path.exists('./flask_session'):
-    os.makedirs('./flask_session')
-
-Session(app)
-
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])  # Add your frontend URL
+# CORS configuration - allow credentials removed since we're using JWT in headers
+CORS(app, 
+     origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 if __name__ == '__main__':
-    print("Starting the Flask app...")
+    print("Starting the Flask app with JWT authentication...")
 
     # Initialize database connection
     db = DatabaseConnection()
@@ -76,7 +73,7 @@ if __name__ == '__main__':
     # Register user types
     User_Registry.register_all_user_types()
 
-    print("✅ Flask-Session configured with filesystem storage")
-    print("✅ Session files will be stored in: ./flask_session/")
+    print("✅ JWT Authentication configured")
+    print("✅ Flask app ready to serve requests")
     
     app.run(debug=True)

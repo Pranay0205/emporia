@@ -1,20 +1,18 @@
 from flask import Blueprint, current_app, request, jsonify, session
+from utils.auth_decorators import token_required, role_required
 
 cart_bp = Blueprint('cart', __name__, url_prefix='/cart')
 
 
 @cart_bp.route('/', methods=['GET'])
+@role_required('customer')
 def get_cart():
     """Get the current user's shopping cart"""
     try:
-
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-        
-        customer_id = session.get('customer_id')
-
+        customer_id = request.current_user.get('customer_id')
         if not customer_id:
-            return jsonify({'message': 'Customer ID not found in session'}), 401
+            return jsonify({'message': 'Customer ID not found'}), 401
+        
 
         # Get or create cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
@@ -39,17 +37,14 @@ def get_cart():
 
 
 @cart_bp.route('/items', methods=['POST'])
+@role_required('customer')
 def add_to_cart():
     try:
         # Check if user is authenticated
         
-        customer_id = session.get('customer_id')
-        
+        customer_id = request.current_user.get('customer_id')
         if not customer_id:
-            return jsonify({'message': 'Customer ID not found in session'}), 401
-            
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
+            return jsonify({'message': 'Customer ID not found'}), 40
 
         data = request.get_json()
 
@@ -98,12 +93,14 @@ def add_to_cart():
 
 
 @cart_bp.route('/items/<int:product_id>', methods=['PUT'])
+@role_required('customer')
 def update_cart_item(product_id):
     """Update an item's quantity in the shopping cart"""
     try:
         # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 40
 
         data = request.get_json()
         if not data:
@@ -150,14 +147,14 @@ def update_cart_item(product_id):
 
 
 @cart_bp.route('/items/<int:product_id>', methods=['DELETE'])
+@role_required('customer')
 def remove_from_cart(product_id):
 
     try:
         # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        customer_id = session.get('customer_id')
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 40
 
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
@@ -192,14 +189,14 @@ def remove_from_cart(product_id):
 
 
 @cart_bp.route('/', methods=['DELETE'])
+@role_required('customer')
 def clear_cart():
 
     try:
         # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        customer_id = session.get('customer_id')
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 40
 
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
