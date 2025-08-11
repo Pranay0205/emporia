@@ -27,12 +27,37 @@ const CartPage = () => {
 
   const fetchCart = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/cart/`, {
+      const user = sessionStorage.getItem("user");
+      let userId;
+
+      if (user) {
+        const userObject = JSON.parse(user);
+        userId = userObject.id;
+      } else {
+        // Handle the case where the user is not logged in
+        // You can either:
+        // 1. Set the cart to an empty state and stop here.
+        setCart({
+          cart_id: 0,
+          customer_id: 0,
+          items: [],
+          total_items: 0,
+          total_price: 0,
+        });
+        setIsLoading(false);
+        return;
+        // 2. Or, perhaps fetch a guest cart if your API supports it.
+      }
+
+      const response = await fetch(`${API_URL}/cart/${userId}`, {
         credentials: "include",
       });
+
       if (!response.ok) {
+        console.log(response);
         throw new Error("Failed to fetch cart");
       }
+
       const data = await response.json();
       setCart(data.cart);
     } catch (error) {
@@ -40,7 +65,7 @@ const CartPage = () => {
       toaster.create({
         type: "error",
         title: "Error",
-        description: "Failed to load cart items",
+        description: `Failed to load cart items due to: ${error}`,
       });
     } finally {
       setIsLoading(false);

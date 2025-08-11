@@ -15,9 +15,8 @@ def register():
         return jsonify({'message': str(e)}), 400
     except Exception as e:
         return jsonify({'message': 'Registration failed'}), 500
- 
-    
-    
+
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """User login"""
@@ -25,8 +24,10 @@ def login():
     if not data:
         return jsonify({'message': 'No data provided'}), 400
     try:
-        is_authenticated, user = current_app.user_service.authenticate_user(data["username"], data["password"])
-        print("Session after authentication:", session)
+        is_authenticated, user = current_app.user_service.authenticate_user(
+            data["username"], data["password"])
+
+        print(f"User authenticated: {user}")
         if not is_authenticated:
             raise ValueError("Invalid username or password")
         if not session.get('is_authenticated'):
@@ -38,12 +39,11 @@ def login():
         return jsonify({'message': 'Login failed',
                         'error': str(e)}), 500
 
+
 @auth_bp.route('/logout', methods=['POST'])  # User logout
 def logout():
     """User logout"""
     print("Session before clearing:", session)
     session.clear()
-    return jsonify({'message': 'Logout successful'}), 200   
+    return jsonify({'message': 'Logout successful'}), 200
 # write a test case for the register function
-
-

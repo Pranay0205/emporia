@@ -30,38 +30,50 @@ export const Navbar = ({
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const user = sessionStorage.getItem("user");
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+    let userId;
+
+    if (user) {
+      const userObject = JSON.parse(user);
+      userId = userObject.id;
+    } else {
+      setCartItems(0);
+      return;
+    }
     const fetchCartData = async () => {
       try {
-        const response = await fetch(`${API_URL}/cart/`, {
+        const response = await fetch(`${API_URL}/cart/${userId}`, {
           credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();
-          setCartItems(data.cart.total_items);
+          const total = data.cart.items.reduce((accumulator, item) => accumulator + item.quantity, 0);
+          setCartItems(total);
         }
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
     };
 
-    if (isAuthenticated) {
-      fetchCartData();
-      const userData = sessionStorage.getItem("user");
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
-    }
+    fetchCartData();
   }, [isAuthenticated, API_URL]);
 
   const handleLogout = async () => {
     setTimeout(async () => {
       try {
         await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          credentials: 'include'
+          method: "POST",
+          credentials: "include",
         });
       } catch (error) {
-        console.error('Logout error:', error);
+        console.error("Logout error:", error);
       }
       sessionStorage.setItem("isAuthenticated", "false");
       setIsAuth(false);

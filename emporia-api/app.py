@@ -1,3 +1,4 @@
+from datetime import timedelta
 import re
 from flask import config, request
 from flask import Flask
@@ -27,10 +28,11 @@ config.read('configs/config.ini')
 
 app.secret_key = config['server']['secret_key']
 app.config['SESSION_TYPE'] = 'filesystem'  # Store sessions as files
-app.config['SESSION_PERMANENT'] = False    # Sessions expire when browser closes
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=31)
+app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_USE_SIGNER'] = True    # Sign session cookies for security
-app.config['SESSION_KEY_PREFIX'] = 'emporia:'  # Prefix for session keys
-app.config['SESSION_FILE_DIR'] = './flask_session'  # Directory for session files
+# Directory for session files
+app.config['SESSION_FILE_DIR'] = './flask_session'
 app.config['SESSION_FILE_THRESHOLD'] = 500  # Max number of session files
 
 
@@ -39,7 +41,8 @@ if not os.path.exists('./flask_session'):
 
 Session(app)
 
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])  # Add your frontend URL
+CORS(app, supports_credentials=True, origins=[
+     "http://localhost:5173"])  # Add your frontend URL
 
 if __name__ == '__main__':
     print("Starting the Flask app...")
@@ -78,5 +81,5 @@ if __name__ == '__main__':
 
     print("✅ Flask-Session configured with filesystem storage")
     print("✅ Session files will be stored in: ./flask_session/")
-    
+
     app.run(debug=True)

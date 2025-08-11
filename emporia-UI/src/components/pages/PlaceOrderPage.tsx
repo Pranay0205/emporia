@@ -30,21 +30,49 @@ const PlaceOrderPage = () => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const response = await fetch(`${API_URL}/cart/`, {
+        const user = sessionStorage.getItem("user");
+        let userId;
+
+        if (user) {
+          const userObject = JSON.parse(user);
+          userId = userObject.id;
+        } else {
+          // No user found, set an empty cart and exit
+          setCart({
+            cart_id: 0,
+            customer_id: 0,
+            items: [],
+            total_items: 0,
+            total_price: 0,
+          });
+          setIsLoading(false); // Make sure to handle loading state
+          return;
+        }
+
+        // If a userId exists, proceed with the fetch request
+        const response = await fetch(`${API_URL}/cart/${userId}`, {
           credentials: "include",
         });
+
         if (!response.ok) {
           throw new Error("Failed to fetch cart");
         }
+
         const data = await response.json();
         setCart(data.cart);
         console.log("Fetched cart:", data.cart);
-        return data.cart;
       } catch (error) {
         console.error("Error fetching cart:", error);
-        throw error;
+        toaster.create({
+          type: "error",
+          title: "Error",
+          description: `Failed to load cart items due to: ${error}`,
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
+
     fetchCart();
   }, [API_URL]);
 
@@ -128,7 +156,7 @@ const PlaceOrderPage = () => {
               </Table.Header>
               <Table.Body>
                 {cart?.items.map((item) => (
-                  <Table.Row key={item.id}>
+                  <Table.Row key={item.id + item.name}>
                     <Table.Cell>{item.name}</Table.Cell>
                     <Table.Cell>{item.category}</Table.Cell>
                     <Table.Cell textAlign="end">{item.price}</Table.Cell>

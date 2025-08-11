@@ -1,4 +1,3 @@
-from multiprocessing import Value
 import re
 from flask import jsonify, session
 from factories.UserFactory.UserFactory import UserFactory
@@ -52,6 +51,30 @@ class UserService:
 
         return user_json_array
 
+    def get_user_by_user_id(self, user_id):
+
+        user = self.user_repository.get_by_id(user_id)
+
+        user = self._convert_array_to_user(user)
+
+        if not user:
+            raise ValueError("User not found")
+
+        if user.role == 'customer':
+
+            customer = self.user_repository.get_customer_by_username(user.id)
+            if not customer:
+                raise ValueError("Customer not found")
+            user = self._convert_array_to_customer(customer, user)
+            if not user:
+                raise ValueError("User not found")
+
+            print(f"Customer fetched: {user}")
+
+            return user
+        else:
+            raise ValueError("User is not a customer")
+
     def _convert_array_to_user(self, user_data):
         try:
 
@@ -68,9 +91,8 @@ class UserService:
                 role=user_data[6]
             )
             return user
-
         except Exception as e:
-            raise ValueError(f"Failed to convert array to user: {str(e)}")
+            raise ValueError(f"Failed to convert array to User: {str(e)}")
 
     def _convert_array_to_seller(self, user_data, user):
         try:
@@ -130,8 +152,8 @@ class UserService:
                 password=user.password,
                 role=user.role,
                 customer_id=user_data[0],
-                address=user_data[1],
-                phone_number=user_data[2]
+                phone_number=user_data[1],
+                address=user_data[2],
             )
             return user
 
@@ -164,7 +186,7 @@ class UserService:
             # Verify password
             if user.password != hashed_password:
                 raise ValueError("Invalid password")
-            
+
             is_authenticated = True
             session['is_authenticated'] = True
             session['role'] = user.role
@@ -184,6 +206,7 @@ class UserService:
                 customer = self.user_repository.get_customer_by_username(
                     user.id)
                 customer = self._convert_array_to_customer(customer, user)
+                print(f"Customer: {customer}")
                 session['customer_id'] = customer.customer_id
             else:
                 raise ValueError("Invalid role")

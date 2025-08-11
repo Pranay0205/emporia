@@ -55,7 +55,7 @@ const LoginPage = ({ setIsAuth }: LoginPageProps) => {
       console.log("Login successful:", responseData);
 
       // Store user data in sessionStorage
-
+      console.log(responseData);
       sessionStorage.setItem("user", JSON.stringify(responseData.user));
       sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
 

@@ -3,21 +3,29 @@ from flask import Blueprint, current_app, request, jsonify, session
 cart_bp = Blueprint('cart', __name__, url_prefix='/cart')
 
 
-@cart_bp.route('/', methods=['GET'])
-def get_cart():
+@cart_bp.route('/<user_id>', methods=['GET'])
+def get_cart(user_id):
     """Get the current user's shopping cart"""
     try:
+        print(f"Fetching cart for user ID: {user_id}")
+        user = current_app.user_service.get_user_by_user_id(user_id)
 
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-        
-        customer_id = session.get('customer_id')
+        print(f"Fetching cart for customer ID: {user.customer_id}")
 
-        if not customer_id:
-            return jsonify({'message': 'Customer ID not found in session'}), 401
+        if not user.customer_id:
+
+            return jsonify({
+                'cart': {
+                    'cart_id': None,
+                    'customer_id': None,
+                    'items': [],
+                    'total_items': 0,
+                    'total_price': 0
+                }
+            }), 200
 
         # Get or create cart
-        cart = current_app.cart_service.get_or_create_cart(customer_id)
+        cart = current_app.cart_service.get_or_create_cart(user.customer_id)
 
         return jsonify({
             'cart': {
@@ -41,15 +49,6 @@ def get_cart():
 @cart_bp.route('/items', methods=['POST'])
 def add_to_cart():
     try:
-        # Check if user is authenticated
-        
-        customer_id = session.get('customer_id')
-        
-        if not customer_id:
-            return jsonify({'message': 'Customer ID not found in session'}), 401
-            
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
 
         data = request.get_json()
 
@@ -58,21 +57,26 @@ def add_to_cart():
 
         product_id = data.get('product_id')
         quantity = data.get('quantity', 1)
-        
+        user_id = data.get('user_id')
+
         if not product_id:
             return jsonify({'message': 'Product ID is required'}), 400
 
-        customer_id = session.get('customer_id')
+        print(
+            f"Adding product {product_id} with quantity {quantity} to cart for user {user_id}")
 
+        user = current_app.user_service.get_user_by_user_id(user_id)
+
+        print(f"User fetched: {user}")
         # Get or create cart
-        cart = current_app.cart_service.get_or_create_cart(customer_id)
+        cart = current_app.cart_service.get_or_create_cart(user.customer_id)
 
         # Add item to cart
         updated_cart = current_app.cart_service.add_item(
             cart.cart_id,
             product_id,
             quantity,
-            customer_id
+            user.customer_id
         )
 
         return jsonify({
