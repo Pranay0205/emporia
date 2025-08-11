@@ -164,29 +164,29 @@ class UserService:
             # Verify password
             if user.password != hashed_password:
                 raise ValueError("Invalid password")
-            else:
-                is_authenticated = True
-                session['is_authenticated'] = True
-                session['role'] = user.role
-                session['user_id'] = user.id
+            
+            is_authenticated = True
+            session['is_authenticated'] = True
+            session['role'] = user.role
+            session['user_id'] = user.id
 
-                if user.role == 'seller':
-                    seller = self.user_repository.get_seller_by_username(
-                        user.id)
-                    print(seller)
-                    seller = self._convert_array_to_seller(seller, user)
-                    session['seller_id'] = seller.seller_id
-                elif (user.role == 'admin'):
-                    admin = self.user_repository.get_admin_by_username(user.id)
-                    admin = self._convert_array_to_admin(admin, user)
-                    session['admin_id'] = admin.admin_id
-                elif (user.role == 'customer'):
-                    customer = self.user_repository.get_customer_by_username(
-                        user.id)
-                    customer = self._convert_array_to_customer(customer, user)
-                    session['customer_id'] = customer.customer_id
-                else:
-                    raise ValueError("Invalid role")
+            if user.role == 'seller':
+                seller = self.user_repository.get_seller_by_username(
+                    user.id)
+                print(seller)
+                seller = self._convert_array_to_seller(seller, user)
+                session['seller_id'] = seller.seller_id
+            elif (user.role == 'admin'):
+                admin = self.user_repository.get_admin_by_username(user.id)
+                admin = self._convert_array_to_admin(admin, user)
+                session['admin_id'] = admin.admin_id
+            elif (user.role == 'customer'):
+                customer = self.user_repository.get_customer_by_username(
+                    user.id)
+                customer = self._convert_array_to_customer(customer, user)
+                session['customer_id'] = customer.customer_id
+            else:
+                raise ValueError("Invalid role")
 
             return is_authenticated, user.to_json()
 

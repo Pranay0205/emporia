@@ -7,7 +7,6 @@ product_bp = Blueprint('products', __name__, url_prefix='/products')
 def get_all_products():
 
     try:
-
         limit = request.args.get('limit', 100, type=int)
         offset = request.args.get('offset', 0, type=int)
 
@@ -87,7 +86,7 @@ def create_product():
 def update_product(product_id):
     """Update a product - requires authenticated seller who owns the product"""
     try:
-        # Check if user is authenticated and is a seller
+        # Check if user is authenticated and is a seller 
         if not session.get('is_authenticated'):
             return jsonify({'message': 'Authentication required'}), 401
 

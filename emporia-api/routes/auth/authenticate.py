@@ -29,7 +29,8 @@ def login():
         print("Session after authentication:", session)
         if not is_authenticated:
             raise ValueError("Invalid username or password")
-                
+        if not session.get('is_authenticated'):
+            raise ValueError("Session failed to initialize")
         return jsonify({'message': 'Login successful', 'user': user}), 200
     except ValueError as e:
         return jsonify({'message': str(e)}), 401

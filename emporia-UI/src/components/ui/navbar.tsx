@@ -53,8 +53,16 @@ export const Navbar = ({
     }
   }, [isAuthenticated, API_URL]);
 
-  const handleLogout = () => {
-    setTimeout(() => {
+  const handleLogout = async () => {
+    setTimeout(async () => {
+      try {
+        await fetch(`${API_URL}/auth/logout`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
       sessionStorage.setItem("isAuthenticated", "false");
       setIsAuth(false);
       toaster.create({
