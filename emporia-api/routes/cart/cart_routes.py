@@ -8,7 +8,13 @@ def get_cart():
     """Get the current user's shopping cart"""
     try:
 
+        if not session.get('is_authenticated'):
+            return jsonify({'message': 'Authentication required'}), 401
+        
         customer_id = session.get('customer_id')
+
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found in session'}), 401
 
         # Get or create cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
@@ -34,20 +40,25 @@ def get_cart():
 
 @cart_bp.route('/items', methods=['POST'])
 def add_to_cart():
-
     try:
         # Check if user is authenticated
-        print("Session before adding item:", session.get('is_authenticated'))
+        
+        customer_id = session.get('customer_id')
+        
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found in session'}), 401
+            
         if not session.get('is_authenticated'):
             return jsonify({'message': 'Authentication required'}), 401
 
         data = request.get_json()
+
         if not data:
             return jsonify({'message': 'No data provided'}), 400
 
         product_id = data.get('product_id')
         quantity = data.get('quantity', 1)
-
+        
         if not product_id:
             return jsonify({'message': 'Product ID is required'}), 400
 

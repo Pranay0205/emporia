@@ -13,3 +13,4 @@ __pycache__/
 configs/
 emporia-UI/package-lock.json
 emporia-UI/package.json
+emporia-api/flask_session/

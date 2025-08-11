@@ -1,3 +1,6 @@
+from flask import jsonify, session
+
+
 class CartService:
     """Service for managing shopping carts"""
 
