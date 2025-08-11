@@ -95,7 +95,7 @@ class CategoryService:
         Convert a Category object to a dictionary.
         """
         return {
-            'id': category.category_id,
+            'category_id': category.category_id,
             'name': category.name,
             'description': category.description
         }

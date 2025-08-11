@@ -11,13 +11,13 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  image_url?: string;
+  image?: string; 
   category_id: number;
   stock: number;
 }
 
 interface Category {
-  category_id: number;
+  category_id: number; 
   name: string;
   description: string;
 }
@@ -30,11 +30,10 @@ const MarketPage = () => {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
-  const placeholderImage = "https://fakeimg.pl/300x200/030303/43e8c4?text=Product&font=bebas";
+  const placeholderImage = "https://placehold.co/300x200/030303/43e8c4?text=Product&font=bebas";
 
   const addToCart = async (productId: number) => {
     try {
-      // Check authentication
       if (!TokenManager.isAuthenticated()) {
         toaster.create({
           type: "error",
@@ -55,7 +54,6 @@ const MarketPage = () => {
         return;
       }
 
-      // Updated: Use JWT token instead of credentials
       const response = await fetch(`${API_URL}/cart/items`, {
         method: "POST",
         headers: {
@@ -69,7 +67,6 @@ const MarketPage = () => {
       });
 
       if (!response.ok) {
-        // Handle 401 unauthorized
         if (response.status === 401) {
           TokenManager.removeToken();
           navigate('/login');
@@ -80,7 +77,7 @@ const MarketPage = () => {
         throw new Error(errorData.message || "Failed to add item to cart");
       }
 
-      const data = await response.json();
+      await response.json();
       toaster.create({
         type: "success",
         title: "Success",
@@ -100,13 +97,12 @@ const MarketPage = () => {
     try {
       const response = await fetch(`${API_URL}/categories`, {
         headers: {
-          "Content-Type": "application/json",
           ...TokenManager.getAuthHeader(),
         },
       });
-
       if (!response.ok) {
-        throw new Error("Failed to fetch categories");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to fetch categories");
       }
 
       const data = await response.json();
@@ -125,13 +121,12 @@ const MarketPage = () => {
     try {
       const response = await fetch(`${API_URL}/products`, {
         headers: {
-          "Content-Type": "application/json",
           ...TokenManager.getAuthHeader(),
         },
       });
-
       if (!response.ok) {
-        throw new Error("Failed to fetch products");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to fetch products");
       }
 
       const data = await response.json();
@@ -161,7 +156,6 @@ const MarketPage = () => {
     fetchData();
   }, [API_URL]);
 
-  // Filter products by category
   const filteredProducts = selectedCategory === "all" 
     ? products 
     : products.filter(product => product.category_id.toString() === selectedCategory);
@@ -169,7 +163,7 @@ const MarketPage = () => {
   const categoryCollection = createListCollection({
     items: [
       { label: "All Categories", value: "all" },
-      ...categories.map((category) => ({
+      ...(categories || []).map((category) => ({
         label: category.name,
         value: category.category_id.toString(),
       }))
@@ -186,17 +180,15 @@ const MarketPage = () => {
   return (
     <Container maxW="container.xl" py={8}>
       <Stack spacing={6}>
-        {/* Header */}
         <Box textAlign="center">
           <Heading size="2xl" mb={4}>
             Emporia Marketplace
           </Heading>
-          <Text fontSize="lg" color="gray.600">
+          <Text fontSize="lg" color="gray.400">
             Discover amazing products from our sellers
           </Text>
         </Box>
 
-        {/* Category Filter */}
         <Box maxW="300px">
           <Text mb={2} fontWeight="medium">Filter by Category:</Text>
           <Select.Root 
@@ -219,11 +211,10 @@ const MarketPage = () => {
           </Select.Root>
         </Box>
 
-        {/* Products Grid */}
         {isLoading ? (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={6}>
             {Array.from({ length: 8 }).map((_, index) => (
-              <Box key={index} bg="white" borderRadius="lg" overflow="hidden" boxShadow="md">
+              <Box key={index} bg="gray.800" borderRadius="lg" overflow="hidden" boxShadow="md">
                 <Skeleton height="200px" />
                 <Box p={4}>
                   <Skeleton height="20px" mb={2} />
@@ -235,7 +226,7 @@ const MarketPage = () => {
           </SimpleGrid>
         ) : filteredProducts.length > 0 ? (
           <>
-            <Text color="gray.600" mb={4}>
+            <Text color="gray.400" mb={4}>
               Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
               {selectedCategory !== "all" && " in selected category"}
             </Text>
@@ -243,7 +234,7 @@ const MarketPage = () => {
               {filteredProducts.map((product) => (
                 <Box 
                   key={product.product_id} 
-                  bg="white" 
+                  bg="gray.800" 
                   borderRadius="lg" 
                   overflow="hidden" 
                   boxShadow="md"
@@ -251,7 +242,7 @@ const MarketPage = () => {
                   transition="all 0.2s"
                 >
                   <Image
-                    src={product.image_url || placeholderImage}
+                    src={product.image || placeholderImage}
                     alt={product.name}
                     height="200px"
                     width="100%"
@@ -259,18 +250,18 @@ const MarketPage = () => {
                   />
                   <Box p={4}>
                     <Stack spacing={2}>
-                      <Heading size="md" noOfLines={2}>
+                      <Heading size="md" noOfLines={2} color="white">
                         {product.name}
                       </Heading>
-                      <Text color="gray.600" noOfLines={3} fontSize="sm">
+                      <Text color="gray.400" noOfLines={3} fontSize="sm">
                         {product.description}
                       </Text>
-                      <Text fontSize="xl" fontWeight="bold" color="blue.600">
-                        ${product.price.toFixed(2)}
+                      <Text fontSize="xl" fontWeight="bold" color="teal.300">
+                        ${Number(product.price).toFixed(2)}
                       </Text>
                       <Text 
                         fontSize="sm" 
-                        color={product.stock > 0 ? "green.600" : "red.600"}
+                        color={product.stock > 0 ? "green.400" : "red.400"}
                         fontWeight="medium"
                       >
                         {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
@@ -279,7 +270,7 @@ const MarketPage = () => {
                       {isAuthenticated ? (
                         isCustomer() ? (
                           <Button
-                            colorScheme="blue"
+                            colorScheme="teal"
                             onClick={() => addToCart(product.product_id)}
                             disabled={product.stock === 0}
                             width="100%"
@@ -296,6 +287,8 @@ const MarketPage = () => {
                           variant="outline"
                           onClick={() => navigate('/login')}
                           width="100%"
+                          color="white"
+                          _hover={{ bg: "whiteAlpha.200" }}
                         >
                           Login to Purchase
                         </Button>
@@ -308,7 +301,7 @@ const MarketPage = () => {
           </>
         ) : (
           <Box textAlign="center" py={12}>
-            <Text fontSize="lg" color="gray.600" mb={4}>
+            <Text fontSize="lg" color="gray.400" mb={4}>
               {selectedCategory === "all" 
                 ? "No products available" 
                 : "No products found in this category"

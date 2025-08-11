@@ -190,3 +190,57 @@ class UserService:
             
         except Exception as e:
             raise ValueError(f"Authentication failed: {str(e)}")
+
+
+    def get_user(self, username):
+        user = self.user_repository.get_user_by_username(username)
+        if not user:
+            raise ValueError("User not found")
+        return user
+
+    def _validate_user(self, user_data):
+        required_fields = ["role", "first_name",
+                           "user_name", "email", "password"]
+
+        for field in required_fields:
+            if field not in user_data:
+                raise ValueError(f"Missing required field: {field}")
+
+        if not re.match(r"^[A-Za-z]+$", user_data['first_name']):
+            raise ValueError("First name can only contain letters")
+
+        if not re.match(r"^[A-Za-z]+$", user_data['last_name']):
+            raise ValueError("Last name can only contain letters")
+
+        if not re.match(r"^[A-Za-z0-9_]+$", user_data['user_name']):
+            raise ValueError(
+                "Username can only contain letters, numbers, and underscores")
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", user_data['email']):
+            raise ValueError("Invalid email format")
+
+        if len(user_data['password']) < 8:
+            raise ValueError("Password must be at least 8 characters")
+
+        # Role-specific validations
+
+        # Customer
+        if user_data['role'] == 'customer':
+            if 'address' not in user_data:
+                raise ValueError("Address is required for customers")
+
+            if 'phone_number' not in user_data:
+                raise ValueError("Phone is required for customers")
+
+        # Seller
+        if user_data['role'] == 'seller':
+            if 'store_name' not in user_data:
+                raise ValueError("Store Name is required for sellers")
+
+            if 'store_desc' not in user_data:
+                raise ValueError("Store Description is required for sellers")
+
+        # Admin
+        if user_data['role'] == 'admin':
+            if 'permissions' not in user_data:
+                raise ValueError("Permissions are required for admins")

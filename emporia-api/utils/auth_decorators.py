@@ -8,6 +8,8 @@ def token_required(f):
     """Decorator to require JWT token authentication"""
     @wraps(f)
     def decorated(*args, **kwargs):
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)   
         token = None
         auth_header = request.headers.get('Authorization')
         

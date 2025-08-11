@@ -226,7 +226,7 @@ const OrderHistoryPage = () => {
                   {order.status.toUpperCase()}
                 </Badge>
                 <Text fontWeight="bold" fontSize="lg">
-                  Total: ${order.total_amount?.toFixed(2)}
+                  Total: ${Number(order.total_amount)?.toFixed(2)}
                 </Text>
               </Stack>
             </SimpleGrid>
@@ -247,10 +247,10 @@ const OrderHistoryPage = () => {
                     <SimpleGrid columns={{ base: 1, sm: 3 }} gap={2}>
                       <Text fontWeight="medium">{item.name}</Text>
                       <Text color="gray.400" fontSize="sm">
-                        Qty: {item.quantity} × ${item.price?.toFixed(2)}
+                        Qty: {item.quantity} × ${Number(item.price)?.toFixed(2)}
                       </Text>
                       <Text textAlign={{ base: "left", sm: "right" }} fontWeight="medium">
-                        ${item.subtotal?.toFixed(2)}
+                        ${Number(item.subtotal)?.toFixed(2)}
                       </Text>
                     </SimpleGrid>
                   </Box>

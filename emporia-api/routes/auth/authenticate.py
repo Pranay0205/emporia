@@ -3,7 +3,7 @@ from utils.auth_decorators import token_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-@auth_bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'], strict_slashes=False)
 def register():
     """User registration"""
     data = request.get_json()
@@ -17,7 +17,7 @@ def register():
     except Exception as e:
         return jsonify({'message': 'Registration failed'}), 500
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST'], strict_slashes=False)
 def login():
     """User login with JWT token"""
     data = request.get_json()

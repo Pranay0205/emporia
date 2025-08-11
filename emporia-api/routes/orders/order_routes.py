@@ -4,7 +4,7 @@ from utils.auth_decorators import token_required, role_required
 order_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
 
-@order_bp.route('/', methods=['POST'])
+@order_bp.route('/', methods=['POST'],strict_slashes=False)
 @role_required('customer')
 def place_order():
     """Place a new order"""
@@ -43,7 +43,7 @@ def place_order():
         return jsonify({'message': f'Error placing order: {str(e)}'}), 500
 
 
-@order_bp.route('/', methods=['GET'])
+@order_bp.route('/', methods=['GET'],strict_slashes=False)
 @role_required('customer')
 def get_customer_orders():
     """Get all orders for current customer"""
@@ -55,7 +55,7 @@ def get_customer_orders():
         return jsonify({'message': f'Error retrieving orders: {str(e)}'}), 500
 
 
-@order_bp.route('/<int:order_id>', methods=['GET'])
+@order_bp.route('/<int:order_id>', methods=['GET'],strict_slashes=False)
 @role_required('customer')
 def get_order(order_id):
     """Get specific order"""
@@ -71,7 +71,7 @@ def get_order(order_id):
         return jsonify({'message': f'Error retrieving order: {str(e)}'}), 500
 
 
-@order_bp.route('/<int:order_id>/cancel', methods=['POST'])
+@order_bp.route('/<int:order_id>/cancel', methods=['POST'],strict_slashes=False)
 @role_required('customer')
 def cancel_order(order_id):
     """Cancel an order"""

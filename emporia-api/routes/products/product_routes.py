@@ -4,7 +4,7 @@ from utils.auth_decorators import token_required, role_required
 product_bp = Blueprint('products', __name__, url_prefix='/products')
 
 
-@product_bp.route('/', methods=['GET'])
+@product_bp.route('/', methods=['GET'], strict_slashes=False)
 def get_all_products():
     """Get all products - no authentication required for browsing"""
     try:
@@ -17,7 +17,7 @@ def get_all_products():
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500
 
 
-@product_bp.route('/<int:product_id>', methods=['GET'])
+@product_bp.route('/<int:product_id>', methods=['GET'], strict_slashes=False)
 def get_product(product_id):
     """Get single product - no authentication required"""
     try:
@@ -29,7 +29,7 @@ def get_product(product_id):
         return jsonify({'message': f'Error retrieving product: {str(e)}'}), 500
 
 
-@product_bp.route('/category/<int:category_id>', methods=['GET'])
+@product_bp.route('/category/<int:category_id>', methods=['GET'], strict_slashes=False)
 def get_products_by_category(category_id):
     """Get products by category - no authentication required"""
     try:
@@ -39,7 +39,7 @@ def get_products_by_category(category_id):
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500
 
 
-@product_bp.route('/seller/<int:seller_id>', methods=['GET'])
+@product_bp.route('/seller/<int:seller_id>', methods=['GET'], strict_slashes=False)
 def get_products_by_seller(seller_id):
     """Get products by seller - no authentication required"""
     try:
@@ -49,7 +49,7 @@ def get_products_by_seller(seller_id):
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500
 
 
-@product_bp.route('/', methods=['POST'])
+@product_bp.route('/', methods=['POST'], strict_slashes=False)
 @role_required('seller')
 def create_product():
     """Create a new product - requires authenticated seller"""
@@ -81,7 +81,7 @@ def create_product():
         return jsonify({'message': f'Error creating product: {str(e)}'}), 500
 
 
-@product_bp.route('/<int:product_id>', methods=['PUT'])
+@product_bp.route('/<int:product_id>', methods=['PUT'], strict_slashes=False)
 @role_required('seller')
 def update_product(product_id):
     """Update a product - requires authenticated seller who owns the product"""
@@ -110,7 +110,7 @@ def update_product(product_id):
         return jsonify({'message': f'Error updating product: {str(e)}'}), 500
 
 
-@product_bp.route('/<int:product_id>', methods=['DELETE'])
+@product_bp.route('/<int:product_id>', methods=['DELETE'], strict_slashes=False)
 @token_required
 def delete_product(product_id):
     """Delete a product - requires authenticated seller who owns the product or admin"""
