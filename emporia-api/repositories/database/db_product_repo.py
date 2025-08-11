@@ -1,3 +1,4 @@
+from flask import g
 from repositories.interfaces.product_repo import ProductRepository
 import mysql.connector
 from models.Product.Product import Product

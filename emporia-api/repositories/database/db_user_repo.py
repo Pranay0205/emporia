@@ -1,3 +1,4 @@
+from flask import g
 from repositories.interfaces.user_repo import UserRepository
 import mysql.connector
 

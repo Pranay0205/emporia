@@ -32,3 +32,5 @@ class DatabaseConnection:
       self.cursor = None      
     except configparser.Error as err:
       print(f"Error reading configuration file: {err}")
+    
+    

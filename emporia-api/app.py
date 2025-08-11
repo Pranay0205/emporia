@@ -1,6 +1,6 @@
 # emporia-api/app.py
 import os
-from flask import Flask
+from flask import Flask, make_response, request
 from dotenv import load_dotenv
 from flask_cors import CORS
 
@@ -33,47 +33,57 @@ app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
 
 # CORS configuration - allow credentials removed since we're using JWT in headers
-CORS(app, 
+# CORS configuration to allow all origins
+CORS(app,
      origins=["http://localhost:5173", "http://127.0.0.1:5173"],
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        res = make_response()
+        res.headers.add('Access-Control-Allow-Origin', '*')
+        res.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        res.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        return res
+
+
+
+# Initialize database connection
+db = DatabaseConnection()
+
+# Initialize repositories
+user_repo = DBUserRepo(db)
+category_repo = DBCategoryRepo(db)
+product_repo = DBProductRepo(db)
+order_repo = DBOrderRepo(db)
+cart_repo = DBCartRepo(db)
+
+# Initialize services
+user_service = UserService(user_repo)
+category_service = CategoryService(category_repo)
+product_service = ProductService(product_repo)
+payment_service = PaymentService()
+order_service = OrderService(order_repo, product_repo, payment_service)
+cart_service = CartService(cart_repo, product_repo)
+
+# Add services to app context
+app.user_service = user_service
+app.category_service = category_service
+app.product_service = product_service
+app.order_service = order_service
+app.cart_service = cart_service
+app.payment_service = payment_service
+
+# Register all blueprints
+register_blueprints(app)
+
+# Register user types
+User_Registry.register_all_user_types()
+
+print("✅ JWT Authentication configured")
+print("✅ Flask app ready to serve requests")
+
 if __name__ == '__main__':
-    print("Starting the Flask app with JWT authentication...")
-
-    # Initialize database connection
-    db = DatabaseConnection()
-
-    # Initialize repositories
-    user_repo = DBUserRepo(db)
-    category_repo = DBCategoryRepo(db)
-    product_repo = DBProductRepo(db)
-    order_repo = DBOrderRepo(db)
-    cart_repo = DBCartRepo(db)
-
-    # Initialize services
-    user_service = UserService(user_repo)
-    category_service = CategoryService(category_repo)
-    product_service = ProductService(product_repo)
-    payment_service = PaymentService()
-    order_service = OrderService(order_repo, product_repo, payment_service)
-    cart_service = CartService(cart_repo, product_repo)
-
-    # Add services to app context
-    app.user_service = user_service
-    app.category_service = category_service
-    app.product_service = product_service
-    app.order_service = order_service
-    app.cart_service = cart_service
-    app.payment_service = payment_service
-
-    # Register all blueprints
-    register_blueprints(app)
-
-    # Register user types
-    User_Registry.register_all_user_types()
-
-    print("✅ JWT Authentication configured")
-    print("✅ Flask app ready to serve requests")
-    
     app.run(debug=True)

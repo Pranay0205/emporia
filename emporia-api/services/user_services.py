@@ -1,4 +1,5 @@
 import hashlib
+import re
 from models.Users.User import User
 from models.Users.Seller import Seller
 from models.Users.Admin import Admin
