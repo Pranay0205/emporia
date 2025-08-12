@@ -1,3 +1,4 @@
+from flask import g
 from repositories.interfaces.user_repo import UserRepository
 import mysql.connector
 
@@ -172,3 +173,62 @@ class DBUserRepo(UserRepository):
                 return None
         except Exception as e:
             raise ValueError(f"Error fetching user by userid: {e}")
+        
+    def get_seller_by_user_id(self, user_id):
+        try:
+            print(f"Retrieving seller for user ID: {user_id}")
+            self.cursor.execute("""
+                SELECT seller_id, store_name, store_desc
+                FROM sellers 
+                WHERE user_id = %s
+            """, (user_id,))
+            user = self.cursor.fetchone()
+
+            if user:
+                print(f"Seller with user ID {user_id} found in the database.")
+                return user
+            
+        except Exception as e:
+            raise ValueError(f"Error fetching seller by user ID: {e}")
+        
+    def get_user_by_id(self, user_id):
+        try:
+         
+            self.cursor.execute("""
+                SELECT id, username, first_name, last_name, email, password, role 
+                FROM users 
+                WHERE id = %s
+            """, (user_id,))
+            
+            user = self.cursor.fetchone()
+            
+            if user:
+                print(f"User {user_id} found in the database.")
+                return user
+            else:
+                print(f"User {user_id} not found in the database.")
+                return None
+        except Exception as e:
+            raise ValueError(f"Error fetching user by username: {e}")
+    
+    def get_seller_by_seller_id(self, seller_id):
+        try:
+            print(f"Retrieving seller for selleralskdjasli; jdois ID: {seller_id}")
+            self.cursor.execute("""
+                SELECT seller_id, store_name, store_desc, user_id
+                FROM sellers 
+                WHERE seller_id = %s
+            """, (seller_id,))
+            
+            seller = self.cursor.fetchone()
+            
+            if seller:
+                print(f"Seller with ID {seller_id} found in the database.")
+                return seller
+            else:
+                print(f"Seller with ID {seller_id} not found in the database.")
+                return None
+        except Exception as e:
+            raise ValueError(f"Error fetching seller by seller ID: {e}")
+        
+  

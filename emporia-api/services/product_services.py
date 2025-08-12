@@ -156,9 +156,10 @@ class ProductService:
     def _convert_to_dict(self, product):
         """
         Convert a Product object to a dictionary.
+        This now uses 'product_id' to match the frontend's expectation.
         """
         return {
-            'id': product.product_id,
+            'product_id': product.product_id, # <-- CORRECTED KEY
             'seller_id': product.seller_id,
             'category_id': product.category_id,
             'name': product.name,

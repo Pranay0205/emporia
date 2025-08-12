@@ -1,3 +1,4 @@
+from flask import g
 from repositories.interfaces.product_repo import ProductRepository
 import mysql.connector
 from models.Product.Product import Product
@@ -135,6 +136,7 @@ class DBProductRepo(ProductRepository):
     
     def get_by_seller(self, seller_id):
         try:
+            print(f"Retrieving products for seller ID: {seller_id}")
             self.cursor.execute("""
                 SELECT id, category_id, name, description, price, stock, seller_id, image
                 FROM products 
@@ -142,6 +144,7 @@ class DBProductRepo(ProductRepository):
             """, (seller_id,))
             
             products_data = self.cursor.fetchall()
+            print(f"Retrieved {len(products_data)} products for seller ID {seller_id}")
             products = []
             
             for product_data in products_data:
@@ -156,7 +159,7 @@ class DBProductRepo(ProductRepository):
                     image=product_data[7]
                 )
                 products.append(product)
-                
+           
             return products
                 
         except Exception as e:

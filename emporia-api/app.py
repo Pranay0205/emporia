@@ -1,8 +1,10 @@
-import re
-from flask import config, request
-from flask import Flask
-from flask_session import Session  # ✅ ADD THIS IMPORT
+# emporia-api/app.py
 import os
+from flask import Flask, make_response, request
+from dotenv import load_dotenv
+from flask_cors import CORS
+
+# Import your existing modules
 from reg import User_Registry
 from repositories.database.db_connection import DatabaseConnection
 from repositories.database.db_user_repo import DBUserRepo
@@ -17,66 +19,71 @@ from services.payment_services import PaymentService
 from services.cart_services import CartService
 from repositories.database.db_cart_repo import DBCartRepo
 from routes import register_blueprints
-import configparser
-from flask_cors import CORS
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-config = configparser.ConfigParser()
-config.read('configs/config.ini')
+
+# Basic Flask configuration (removed all session-related config)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+# JWT Configuration (these will be used by the JWT utility)
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
+
+# CORS configuration - allow credentials removed since we're using JWT in headers
+# CORS configuration to allow all origins
+CORS(app,
+     origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        res = make_response()
+        res.headers.add('Access-Control-Allow-Origin', '*')
+        res.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        res.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        return res
 
 
-app.secret_key = config['server']['secret_key']
-app.config['SESSION_TYPE'] = 'filesystem'  # Store sessions as files
-app.config['SESSION_PERMANENT'] = False    # Sessions expire when browser closes
-app.config['SESSION_USE_SIGNER'] = True    # Sign session cookies for security
-app.config['SESSION_KEY_PREFIX'] = 'emporia:'  # Prefix for session keys
-app.config['SESSION_FILE_DIR'] = './flask_session'  # Directory for session files
-app.config['SESSION_FILE_THRESHOLD'] = 500  # Max number of session files
 
+# Initialize database connection
+db = DatabaseConnection()
 
-if not os.path.exists('./flask_session'):
-    os.makedirs('./flask_session')
+# Initialize repositories
+user_repo = DBUserRepo(db)
+category_repo = DBCategoryRepo(db)
+product_repo = DBProductRepo(db)
+order_repo = DBOrderRepo(db)
+cart_repo = DBCartRepo(db)
 
-Session(app)
+# Initialize services
+user_service = UserService(user_repo)
+category_service = CategoryService(category_repo)
+product_service = ProductService(product_repo)
+payment_service = PaymentService()
+order_service = OrderService(order_repo, product_repo, payment_service)
+cart_service = CartService(cart_repo, product_repo)
 
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])  # Add your frontend URL
+# Add services to app context
+app.user_service = user_service
+app.category_service = category_service
+app.product_service = product_service
+app.order_service = order_service
+app.cart_service = cart_service
+app.payment_service = payment_service
+
+# Register all blueprints
+register_blueprints(app)
+
+# Register user types
+User_Registry.register_all_user_types()
+
+print("✅ JWT Authentication configured")
+print("✅ Flask app ready to serve requests")
 
 if __name__ == '__main__':
-    print("Starting the Flask app...")
-
-    # Initialize database connection
-    db = DatabaseConnection()
-
-    # Initialize repositories
-    user_repo = DBUserRepo(db)
-    category_repo = DBCategoryRepo(db)
-    product_repo = DBProductRepo(db)
-    order_repo = DBOrderRepo(db)
-    cart_repo = DBCartRepo(db)
-
-    # Initialize services
-    user_service = UserService(user_repo)
-    category_service = CategoryService(category_repo)
-    product_service = ProductService(product_repo)
-    payment_service = PaymentService()
-    order_service = OrderService(order_repo, product_repo, payment_service)
-    cart_service = CartService(cart_repo, product_repo)
-
-    # Add services to app context
-    app.user_service = user_service
-    app.category_service = category_service
-    app.product_service = product_service
-    app.order_service = order_service
-    app.cart_service = cart_service
-    app.payment_service = payment_service
-
-    # Register all blueprints
-    register_blueprints(app)
-
-    # Register user types
-    User_Registry.register_all_user_types()
-
-    print("✅ Flask-Session configured with filesystem storage")
-    print("✅ Session files will be stored in: ./flask_session/")
-    
     app.run(debug=True)

@@ -23,7 +23,8 @@ class DatabaseConnection:
         password=config['database']['password'],
         database=config['database']['database']
       )
-      self.cursor = self.connection.cursor()
+      # Using a buffered cursor to prevent "Commands out of sync" errors
+      self.cursor = self.connection.cursor(buffered=True)
       print("Database connection established.")
     except mysql.connector.Error as err:
       print(f"Error: {err}")
@@ -31,4 +32,5 @@ class DatabaseConnection:
       self.cursor = None      
     except configparser.Error as err:
       print(f"Error reading configuration file: {err}")
+    
     
