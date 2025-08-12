@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { Box, Container, Heading, Text, Stack, Badge, Button, SimpleGrid } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  Stack,
+  Badge,
+  Button,
+  SimpleGrid,
+} from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { useNavigate } from "react-router-dom";
 import TokenManager from "../../utils/tokenManager";
@@ -29,10 +38,10 @@ const OrderHistoryPage = () => {
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      
+
       // Check if user is authenticated
       if (!TokenManager.isAuthenticated()) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
@@ -43,17 +52,17 @@ const OrderHistoryPage = () => {
           ...TokenManager.getAuthHeader(),
         },
       });
-      
+
       if (!response.ok) {
         // Handle 401 unauthorized
         if (response.status === 401) {
           TokenManager.removeToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
         throw new Error("Failed to fetch orders");
       }
-      
+
       const data = await response.json();
       setOrders(data.orders || []);
     } catch (error) {
@@ -72,7 +81,7 @@ const OrderHistoryPage = () => {
     try {
       // Check if user is authenticated
       if (!TokenManager.isAuthenticated()) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
@@ -84,24 +93,24 @@ const OrderHistoryPage = () => {
           ...TokenManager.getAuthHeader(),
         },
       });
-      
+
       if (!response.ok) {
         // Handle 401 unauthorized
         if (response.status === 401) {
           TokenManager.removeToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
         throw new Error("Failed to cancel order");
       }
-      
+
       const data = await response.json();
       toaster.create({
         type: "success",
         title: "Success",
         description: data.message || "Order cancelled successfully",
       });
-      
+
       // Refresh orders after cancellation
       fetchOrders();
     } catch (error) {
@@ -134,18 +143,23 @@ const OrderHistoryPage = () => {
   };
 
   const canCancelOrder = (status: string) => {
-    const nonCancellableStatuses = ['cancelled', 'canceled', 'delivered', 'shipped'];
+    const nonCancellableStatuses = [
+      "cancelled",
+      "canceled",
+      "delivered",
+      "shipped",
+    ];
     return !nonCancellableStatuses.includes(status.toLowerCase());
   };
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
       return dateString;
@@ -158,19 +172,28 @@ const OrderHistoryPage = () => {
   };
 
   useEffect(() => {
-    // Check authentication before fetching orders
-    if (TokenManager.isAuthenticated()) {
-      fetchOrders();
-    } else {
-      navigate('/login');
-    }
-  }, [navigate]);
+    const initializeOrders = async () => {
+      if (TokenManager.isAuthenticated()) {
+        await fetchOrders();
+      } else {
+        navigate("/login");
+      }
+    };
+
+    initializeOrders();
+  }, []);
 
   if (isLoading) {
     return (
       <Container maxW="container.xl" py={8}>
         <Heading mb={6}>Order History</Heading>
-        <Box p={6} borderWidth={1} borderRadius="lg" bg="gray.800" textAlign="center">
+        <Box
+          p={6}
+          borderWidth={1}
+          borderRadius="lg"
+          bg="gray.800"
+          textAlign="center"
+        >
           <Text>Loading your orders...</Text>
         </Box>
       </Container>
@@ -181,12 +204,19 @@ const OrderHistoryPage = () => {
     return (
       <Container maxW="container.xl" py={8}>
         <Heading mb={6}>Order History</Heading>
-        <Box p={6} borderWidth={1} borderRadius="lg" bg="gray.800" textAlign="center">
+        <Box
+          p={6}
+          borderWidth={1}
+          borderRadius="lg"
+          bg="gray.800"
+          textAlign="center"
+        >
           <Heading size="lg" mb={4}>
             No Orders Yet
           </Heading>
           <Text mb={4} color="gray.400">
-            You haven't placed any orders yet. Start shopping to see your order history here!
+            You haven't placed any orders yet. Start shopping to see your order
+            history here!
           </Text>
           <Button colorScheme="teal" onClick={() => navigate("/market")}>
             Start Shopping
@@ -200,12 +230,18 @@ const OrderHistoryPage = () => {
     <Container maxW="container.xl" py={8}>
       <Heading mb={6}>Order History</Heading>
       <Text mb={4} color="gray.400">
-        {orders.length} order{orders.length !== 1 ? 's' : ''} found
+        {orders.length} order{orders.length !== 1 ? "s" : ""} found
       </Text>
-      
+
       <Stack gap={6}>
         {orders.map((order, index) => (
-          <Box key={order.order_id || index} p={6} borderWidth={1} borderRadius="lg" bg="gray.800">
+          <Box
+            key={order.order_id || index}
+            p={6}
+            borderWidth={1}
+            borderRadius="lg"
+            bg="gray.800"
+          >
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={4} mb={4}>
               <Stack>
                 <Text fontSize="lg" fontWeight="bold">
@@ -216,11 +252,11 @@ const OrderHistoryPage = () => {
                 </Text>
               </Stack>
               <Stack align={{ base: "start", md: "end" }}>
-                <Badge 
-                  colorPalette={getStatusColor(order.status)} 
-                  variant="solid" 
-                  fontSize="0.8em" 
-                  px={2} 
+                <Badge
+                  colorPalette={getStatusColor(order.status)}
+                  variant="solid"
+                  fontSize="0.8em"
+                  px={2}
                   py={1}
                 >
                   {order.status.toUpperCase()}
@@ -238,10 +274,10 @@ const OrderHistoryPage = () => {
               </Text>
               <Stack gap={3}>
                 {order.items?.map((item) => (
-                  <Box 
-                    key={item.product_id} 
-                    p={3} 
-                    bg="gray.700" 
+                  <Box
+                    key={item.product_id}
+                    p={3}
+                    bg="gray.700"
                     borderRadius="md"
                   >
                     <SimpleGrid columns={{ base: 1, sm: 3 }} gap={2}>
@@ -249,7 +285,10 @@ const OrderHistoryPage = () => {
                       <Text color="gray.400" fontSize="sm">
                         Qty: {item.quantity} × ${Number(item.price)?.toFixed(2)}
                       </Text>
-                      <Text textAlign={{ base: "left", sm: "right" }} fontWeight="medium">
+                      <Text
+                        textAlign={{ base: "left", sm: "right" }}
+                        fontWeight="medium"
+                      >
                         ${Number(item.subtotal)?.toFixed(2)}
                       </Text>
                     </SimpleGrid>
@@ -268,7 +307,7 @@ const OrderHistoryPage = () => {
                 >
                   View Details
                 </Button>
-                
+
                 {canCancelOrder(order.status) && (
                   <Button
                     colorScheme="red"
@@ -279,8 +318,8 @@ const OrderHistoryPage = () => {
                     Cancel Order
                   </Button>
                 )}
-                
-                {order.status.toLowerCase() === 'delivered' && (
+
+                {order.status.toLowerCase() === "delivered" && (
                   <Button
                     colorScheme="green"
                     variant="outline"
@@ -301,14 +340,10 @@ const OrderHistoryPage = () => {
           </Box>
         ))}
       </Stack>
-      
+
       {/* Refresh Button */}
       <Box textAlign="center" mt={6}>
-        <Button 
-          variant="outline" 
-          onClick={fetchOrders}
-          disabled={isLoading}
-        >
+        <Button variant="outline" onClick={fetchOrders} disabled={isLoading}>
           Refresh Orders
         </Button>
       </Box>

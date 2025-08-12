@@ -12,6 +12,7 @@ def get_all_products():
         offset = request.args.get('offset', 0, type=int)
 
         products = current_app.product_service.get_all_products(limit, offset)
+        print(f"Retrieved {len(products)} products with limit={limit} and offset={offset}")
         return jsonify({'products': products}), 200
     except Exception as e:
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500
@@ -39,11 +40,16 @@ def get_products_by_category(category_id):
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500
 
 
-@product_bp.route('/seller/<int:seller_id>', methods=['GET'], strict_slashes=False)
-def get_products_by_seller(seller_id):
+@product_bp.route('/seller/<int:user_id>', methods=['GET'], strict_slashes=False)
+def get_products_by_seller(user_id):
     """Get products by seller - no authentication required"""
     try:
-        products = current_app.product_service.get_products_by_seller(seller_id)
+        # print(f"Retrieved seller ID: {seller_id}")
+        
+        seller = current_app.user_service.get_seller_by_user_id(user_id)
+        if not seller:
+            return jsonify({'message': 'Seller not found'}), 404
+        products = current_app.product_service.get_products_by_seller(seller.seller_id)
         return jsonify({'products': products}), 200
     except Exception as e:
         return jsonify({'message': f'Error retrieving products: {str(e)}'}), 500

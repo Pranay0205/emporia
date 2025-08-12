@@ -47,6 +47,30 @@ class UserService:
             user_json_array.append(user.to_json())
 
         return user_json_array
+    
+    def get_seller_by_user_id(self, user_id): 
+        print(f"Retrieving seller for user ID: {user_id}")
+        raw_user = self.user_repository.get_user_by_id(user_id)
+        if not raw_user:
+            raise ValueError("User not found")
+      
+        user = self._convert_array_to_user(raw_user)
+       
+        seller = self.user_repository.get_seller_by_username(user.id)
+
+        seller = self._convert_array_to_seller(seller, user)
+        print(f"Retrieved seller {seller.seller_id} for user ID {user.id}")
+        if seller:
+            print(f"Retrieved seller {seller.seller_id} for user ID {user.id}")
+        return seller
+
+     
+    def get_user_by_id(self, user_id):
+        user_data = self.user_repository.get_user_by_id(user_id)
+        if not user_data:
+            raise ValueError(f"User with ID {user_id} not found")
+        user = self._convert_array_to_user(user_data)
+        return user
 
     def _convert_array_to_user(self, user_data):
         try:

@@ -70,13 +70,18 @@ const ProductPage = () => {
     try {
       // Check authentication
       if (!TokenManager.isAuthenticated()) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       // Validate form
-      if (!newProduct.name || !newProduct.description || !newProduct.price || 
-          !newProduct.category_id || !newProduct.stock) {
+      if (
+        !newProduct.name ||
+        !newProduct.description ||
+        !newProduct.price ||
+        !newProduct.category_id ||
+        !newProduct.stock
+      ) {
         toaster.create({
           type: "error",
           title: "Validation Error",
@@ -107,7 +112,7 @@ const ProductPage = () => {
         // Handle 401 unauthorized
         if (response.status === 401) {
           TokenManager.removeToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
         const errorData = await response.json().catch(() => ({}));
@@ -129,16 +134,17 @@ const ProductPage = () => {
         stock: "",
         image_url: "",
       });
-      
+
       setIsDialogOpen(false);
-      
+
       // Refresh products list
       fetchProducts();
     } catch (error: Error | unknown) {
       toaster.create({
         type: "error",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create product",
+        description:
+          error instanceof Error ? error.message : "Failed to create product",
       });
     }
   };
@@ -146,7 +152,7 @@ const ProductPage = () => {
   const deleteProduct = async (productId: number) => {
     try {
       if (!TokenManager.isAuthenticated()) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
@@ -161,7 +167,7 @@ const ProductPage = () => {
       if (!response.ok) {
         if (response.status === 401) {
           TokenManager.removeToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
         throw new Error("Failed to delete product");
@@ -192,7 +198,7 @@ const ProductPage = () => {
         title: "Login Required",
         description: "You must be logged in to view this page.",
       });
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
@@ -203,17 +209,17 @@ const ProductPage = () => {
         title: "User Not Found",
         description: "No user data found.",
       });
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
-    if (userData.role !== 'seller') {
+    if (userData.role !== "seller") {
       toaster.create({
         type: "error",
         title: "Access Denied",
         description: "You must be a seller to access this page.",
       });
-      navigate('/market');
+      navigate("/market");
       return;
     }
 
@@ -223,12 +229,14 @@ const ProductPage = () => {
   const fetchProducts = async () => {
     try {
       if (!TokenManager.isAuthenticated()) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
+      const user = TokenManager.getUser();
+      console.log("Fetching products for user:", user);
       // Updated: Use JWT token instead of credentials
-      const response = await fetch(`${API_URL}/products`, {
+      const response = await fetch(`${API_URL}/products/seller/${user.id}`, {
         headers: {
           "Content-Type": "application/json",
           ...TokenManager.getAuthHeader(),
@@ -238,7 +246,7 @@ const ProductPage = () => {
       if (!response.ok) {
         if (response.status === 401) {
           TokenManager.removeToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
         throw new Error("Failed to fetch products");
@@ -246,10 +254,8 @@ const ProductPage = () => {
 
       const data = await response.json();
       // Filter products to show only current seller's products
-      const sellerProducts = data.products?.filter((product: Product) => 
-        product.seller_id === user?.seller_id || product.seller_id === user?.id
-      ) || [];
-      setProducts(sellerProducts);
+      console.log("Fetched products:", data.products);
+      setProducts(data.products);
     } catch (error) {
       console.error("Error fetching products:", error);
       toaster.create({
@@ -296,17 +302,25 @@ const ProductPage = () => {
     if (user) {
       const fetchData = async () => {
         setIsLoading(true);
-        await Promise.all([fetchProducts(), fetchCategories()]);
+        await fetchCategories();
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await fetchProducts();
         setIsLoading(false);
       };
-      fetchData();
+      // Add delay to prevent rapid requests
+      const timeoutId = setTimeout(() => {
+        fetchData();
+      }, 100); // 100ms delay
+
+      return () => clearTimeout(timeoutId);
     }
   }, [user, API_URL]);
 
   // Filter products based on search term
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (!user || user.role !== "seller") {
@@ -319,7 +333,7 @@ const ProductPage = () => {
           <Text textStyle="xl" color="gray.600" mt="4">
             You must be logged in as a seller to view this page.
           </Text>
-          <Button mt="4" colorScheme="blue" onClick={() => navigate('/login')}>
+          <Button mt="4" colorScheme="blue" onClick={() => navigate("/login")}>
             Go to Login
           </Button>
         </Box>
@@ -343,18 +357,21 @@ const ProductPage = () => {
           Welcome, {user.first_name}! Manage your product inventory here.
         </Text>
       </Box>
-      
+
       <SimpleGrid columns={{ xl: 10 }} gap={10} padding="4" m="4">
         <GridItem colSpan={{ xl: 9 }}>
-          <Input 
-            placeholder="Search your products..." 
+          <Input
+            placeholder="Search your products..."
             size="lg"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </GridItem>
         <GridItem colSpan={{ xl: 1 }}>
-          <Dialog.Root open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
+          <Dialog.Root
+            open={isDialogOpen}
+            onOpenChange={(e) => setIsDialogOpen(e.open)}
+          >
             <Dialog.Trigger asChild>
               <Button variant="solid" colorPalette="teal" ml={4}>
                 Add Product
@@ -438,11 +455,19 @@ const ProductPage = () => {
                           <NativeSelect.Field
                             placeholder="Select category"
                             value={newProduct.category_id}
-                            onChange={(e) => setNewProduct((prev) => ({ ...prev, category_id: e.target.value }))}
+                            onChange={(e) =>
+                              setNewProduct((prev) => ({
+                                ...prev,
+                                category_id: e.target.value,
+                              }))
+                            }
                           >
                             <option value="">Select a category</option>
                             {categoryCollection.items.map((category) => (
-                              <option value={category.value} key={category.value}>
+                              <option
+                                value={category.value}
+                                key={category.value}
+                              >
                                 {category.label}
                               </option>
                             ))}
@@ -487,14 +512,18 @@ const ProductPage = () => {
                     </form>
                   </Dialog.Body>
                   <Dialog.Footer>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setIsDialogOpen(false)}
                       mr="2"
                     >
                       Cancel
                     </Button>
-                    <Button variant="solid" colorPalette="teal" onClick={handleSubmit}>
+                    <Button
+                      variant="solid"
+                      colorPalette="teal"
+                      onClick={handleSubmit}
+                    >
                       Create Product
                     </Button>
                   </Dialog.Footer>
@@ -504,7 +533,7 @@ const ProductPage = () => {
           </Dialog.Root>
         </GridItem>
       </SimpleGrid>
-      
+
       <>
         {isLoading ? (
           <Box textAlign="center" p="8">
@@ -515,13 +544,24 @@ const ProductPage = () => {
             <Text color="gray.600" mb="4">
               Showing {filteredProducts.length} of {products.length} products
             </Text>
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} gap={4} padding="4">
+            <SimpleGrid
+              columns={{ base: 1, md: 2, lg: 3, xl: 4 }}
+              gap={4}
+              padding="4"
+            >
               {filteredProducts.map((product) => (
-                <Box key={product.product_id} margin="4" maxW={500} height={600} borderRadius="lg">
+                <Box
+                  key={product.product_id}
+                  margin="4"
+                  maxW={500}
+                  height={600}
+                  borderRadius="lg"
+                >
                   <Card.Root overflow="hidden">
                     <Image
                       src={
-                        product.image_url || "https://fakeimg.pl/400x300/000000/5cf2ca?text=Product+Image&font=bebas"
+                        product.image_url ||
+                        "https://fakeimg.pl/400x300/000000/5cf2ca?text=Product+Image&font=bebas"
                       }
                       alt={product.name}
                       height="200px"
@@ -529,21 +569,32 @@ const ProductPage = () => {
                     />
                     <Card.Body gap="2">
                       <Card.Title textStyle="3xl">{product.name}</Card.Title>
-                      <Card.Description textStyle="sm">{product.description}</Card.Description>
-                      <Text textStyle="2xl" fontWeight="medium" letterSpacing="tight" mt="2">
-                        ${product.price.toFixed(2)}
+                      <Card.Description textStyle="sm">
+                        {product.description}
+                      </Card.Description>
+                      <Text
+                        textStyle="2xl"
+                        fontWeight="medium"
+                        letterSpacing="tight"
+                        mt="2"
+                      >
+                        $
+                        {product.price
+                          ? Number(product.price).toFixed(2)
+                          : "0.00"}
                       </Text>
                       <Text color={product.stock > 0 ? "green.500" : "red.500"}>
-                        Stock: {product.stock} {product.stock === 0 && "(Out of Stock)"}
+                        Stock: {product.stock}{" "}
+                        {product.stock === 0 && "(Out of Stock)"}
                       </Text>
                     </Card.Body>
                     <Card.Footer gap="2">
                       <Button variant="solid" colorPalette="blue" flex="1">
                         Edit
                       </Button>
-                      <Button 
-                        variant="solid" 
-                        colorPalette="red" 
+                      <Button
+                        variant="solid"
+                        colorPalette="red"
                         flex="1"
                         onClick={() => deleteProduct(product.product_id)}
                       >
@@ -558,7 +609,9 @@ const ProductPage = () => {
         ) : (
           <Box textAlign="center" p="8">
             <Text fontSize="lg" color="gray.600">
-              {searchTerm ? "No products found matching your search." : "No products found. Create your first product!"}
+              {searchTerm
+                ? "No products found matching your search."
+                : "No products found. Create your first product!"}
             </Text>
             {searchTerm && (
               <Button mt="4" onClick={() => setSearchTerm("")}>
@@ -572,4 +625,4 @@ const ProductPage = () => {
   );
 };
 
-export default ProductPage
+export default ProductPage;

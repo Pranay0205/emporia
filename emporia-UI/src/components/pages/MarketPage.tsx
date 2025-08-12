@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Container, SimpleGrid, Image, Text, Stack, Heading, Button, Portal, Skeleton } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  SimpleGrid,
+  Image,
+  Text,
+  Stack,
+  Heading,
+  Button,
+  Portal,
+  Skeleton,
+} from "@chakra-ui/react";
 import { Select } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { createListCollection } from "@chakra-ui/react";
@@ -11,13 +22,13 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  image?: string; 
+  image?: string;
   category_id: number;
   stock: number;
 }
 
 interface Category {
-  category_id: number; 
+  category_id: number;
   name: string;
   description: string;
 }
@@ -41,12 +52,12 @@ const MarketPage = () => {
           title: "Authentication Required",
           description: "Please log in to add items to cart",
         });
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       const user = TokenManager.getUser();
-      if (!user || user.role !== 'customer') {
+      if (!user || user.role !== "customer") {
         toaster.create({
           type: "error",
           title: "Customer Only",
@@ -62,9 +73,9 @@ const MarketPage = () => {
           "Content-Type": "application/json",
           ...TokenManager.getAuthHeader(),
         },
-        body: JSON.stringify({ 
-          product_id: productId, 
-          quantity: 1 
+        body: JSON.stringify({
+          product_id: productId,
+          quantity: 1,
         }),
       });
 
@@ -72,10 +83,10 @@ const MarketPage = () => {
         // Handle 401 unauthorized
         if (response.status === 401) {
           TokenManager.removeToken();
-          navigate('/login');
+          navigate("/login");
           return;
         }
-        
+
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to add item to cart");
       }
@@ -91,80 +102,90 @@ const MarketPage = () => {
       toaster.create({
         type: "error",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add item to cart",
-      });
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      // Added authentication header for consistency
-      const response = await fetch(`${API_URL}/categories`, {
-        headers: {
-          ...TokenManager.getAuthHeader(),
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to fetch categories");
-      }
-
-      const data = await response.json();
-      setCategories(data.categories || []);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      toaster.create({
-        type: "error",
-        title: "Error",
-        description: "Failed to load categories",
-      });
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      // Added authentication header for consistency
-      const response = await fetch(`${API_URL}/products`, {
-        headers: {
-          ...TokenManager.getAuthHeader(),
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to fetch products");
-      }
-
-      const data = await response.json();
-      setProducts(data.products || []);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toaster.create({
-        type: "error",
-        title: "Error",
-        description: "Failed to load products",
+        description:
+          error instanceof Error ? error.message : "Failed to add item to cart",
       });
     }
   };
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Added authentication header for consistency
+        const response = await fetch(`${API_URL}/categories`, {
+          headers: {
+            ...TokenManager.getAuthHeader(),
+          },
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to fetch categories");
+        }
+
+        const data = await response.json();
+        setCategories(data.categories || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toaster.create({
+          type: "error",
+          title: "Error",
+          description: "Failed to load categories",
+        });
+      }
+    };
+
+    const fetchProducts = async () => {
+      try {
+        // Added authentication header for consistency
+        const response = await fetch(`${API_URL}/products`, {
+          headers: {
+            ...TokenManager.getAuthHeader(),
+          },
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to fetch products");
+        }
+
+        const data = await response.json();
+        setProducts(data.products || []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        toaster.create({
+          type: "error",
+          title: "Error",
+          description: "Failed to load products",
+        });
+      }
+    };
+
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        await Promise.all([fetchCategories(), fetchProducts()]);
+        await fetchCategories();
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await fetchProducts();
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
     };
+    // Add delay to prevent rapid requests
+    const timeoutId = setTimeout(() => {
+      fetchData();
+    }, 100); // 100ms delay
 
-    fetchData();
+    return () => clearTimeout(timeoutId);
   }, [API_URL]);
 
   // Filter products by category
-  const filteredProducts = selectedCategory === "all" 
-    ? products 
-    : products.filter(product => product.category_id.toString() === selectedCategory);
+  const filteredProducts =
+    selectedCategory === "all"
+      ? products
+      : products.filter(
+          (product) => product.category_id.toString() === selectedCategory
+        );
 
   const categoryCollection = createListCollection({
     items: [
@@ -172,13 +193,13 @@ const MarketPage = () => {
       ...(categories || []).map((category) => ({
         label: category.name,
         value: category.category_id.toString(),
-      }))
+      })),
     ],
   });
 
   const isCustomer = () => {
     const user = TokenManager.getUser();
-    return user?.role === 'customer';
+    return user?.role === "customer";
   };
 
   const isAuthenticated = TokenManager.isAuthenticated();
@@ -197,24 +218,37 @@ const MarketPage = () => {
         </Box>
 
         {/* Category Filter */}
-        <Box maxW="300px">
-          <Text mb={2} fontWeight="medium">Filter by Category:</Text>
-          <Select.Root 
+        <Box>
+          <Select.Root
+            defaultValue={[selectedCategory]}
+            onValueChange={(details) =>
+              setSelectedCategory(
+                Array.isArray(details.value) ? details.value[0] : details.value
+              )
+            }
             collection={categoryCollection}
-            value={[selectedCategory]}
-            onValueChange={(e) => setSelectedCategory(e.value[0] || "all")}
+            size="lg"
           >
-            <Select.Trigger>
-              <Select.ValueText placeholder="Select category" />
-            </Select.Trigger>
+            <Select.Label>Filter by Category</Select.Label>
+            <Select.Control>
+              <Select.Trigger>
+                <Select.ValueText placeholder="Select category" />
+              </Select.Trigger>
+              <Select.IndicatorGroup>
+                <Select.Indicator />
+              </Select.IndicatorGroup>
+            </Select.Control>
             <Portal>
-              <Select.Content>
-                {categoryCollection.items.map((item) => (
-                  <Select.Item item={item} key={item.value}>
-                    {item.label}
-                  </Select.Item>
-                ))}
-              </Select.Content>
+              <Select.Positioner>
+                <Select.Content>
+                  {categoryCollection.items.map((item) => (
+                    <Select.Item item={item} key={item.value}>
+                      {item.label}
+                      <Select.ItemIndicator />
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Positioner>
             </Portal>
           </Select.Root>
         </Box>
@@ -223,7 +257,13 @@ const MarketPage = () => {
         {isLoading ? (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} gap={6}>
             {Array.from({ length: 8 }).map((_, index) => (
-              <Box key={index} bg="white" borderRadius="lg" overflow="hidden" boxShadow="md">
+              <Box
+                key={index}
+                bg="white"
+                borderRadius="lg"
+                overflow="hidden"
+                boxShadow="md"
+              >
                 <Skeleton height="200px" />
                 <Box p={4}>
                   <Skeleton height="20px" mb={2} />
@@ -236,16 +276,17 @@ const MarketPage = () => {
         ) : filteredProducts.length > 0 ? (
           <>
             <Text color="gray.600" mb={4}>
-              Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+              Showing {filteredProducts.length} product
+              {filteredProducts.length !== 1 ? "s" : ""}
               {selectedCategory !== "all" && " in selected category"}
             </Text>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} gap={6}>
               {filteredProducts.map((product) => (
-                <Box 
-                  key={product.product_id} 
-                  bg="grey.200" 
-                  borderRadius="lg" 
-                  overflow="hidden" 
+                <Box
+                  key={product.product_id}
+                  bg="grey.200"
+                  borderRadius="lg"
+                  overflow="hidden"
                   boxShadow="md"
                   _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                   transition="all 0.2s"
@@ -259,23 +300,23 @@ const MarketPage = () => {
                   />
                   <Box p={4}>
                     <Stack gap={2}>
-                      <Heading size="md" noOfLines={2}>
-                        {product.name}
-                      </Heading>
-                      <Text color="gray.600" noOfLines={3} fontSize="sm">
+                      <Heading size="md">{product.name}</Heading>
+                      <Text color="gray.600" fontSize="sm">
                         {product.description}
                       </Text>
-                      <Text fontSize="xl" fontWeight="bold" color="blue.600">
+                      <Text fontSize="xl" fontWeight="bold" color="teal.600">
                         ${Number(product.price).toFixed(2)}
                       </Text>
-                      <Text 
-                        fontSize="sm" 
+                      <Text
+                        fontSize="sm"
                         color={product.stock > 0 ? "green.600" : "red.600"}
                         fontWeight="medium"
                       >
-                        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                        {product.stock > 0
+                          ? `${product.stock} in stock`
+                          : "Out of stock"}
                       </Text>
-                      
+
                       {isAuthenticated ? (
                         isCustomer() ? (
                           <Button
@@ -284,17 +325,24 @@ const MarketPage = () => {
                             disabled={product.stock === 0}
                             width="100%"
                           >
-                            {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                            {product.stock === 0
+                              ? "Out of Stock"
+                              : "Add to Cart"}
                           </Button>
                         ) : (
-                          <Text fontSize="sm" color="gray.500" textAlign="center" py={2}>
+                          <Text
+                            fontSize="sm"
+                            color="gray.500"
+                            textAlign="center"
+                            py={2}
+                          >
                             Login as customer to purchase
                           </Text>
                         )
                       ) : (
                         <Button
                           variant="outline"
-                          onClick={() => navigate('/login')}
+                          onClick={() => navigate("/login")}
                           width="100%"
                         >
                           Login to Purchase
@@ -309,10 +357,9 @@ const MarketPage = () => {
         ) : (
           <Box textAlign="center" py={12}>
             <Text fontSize="lg" color="gray.600" mb={4}>
-              {selectedCategory === "all" 
-                ? "No products available" 
-                : "No products found in this category"
-              }
+              {selectedCategory === "all"
+                ? "No products available"
+                : "No products found in this category"}
             </Text>
             {selectedCategory !== "all" && (
               <Button onClick={() => setSelectedCategory("all")}>
