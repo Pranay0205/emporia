@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Button, Field, Input, Stack, Box, Heading, Text } from "@chakra-ui/react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useForm } from "react-hook-form";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { AuthBackground } from "@/components/ui/auth-background";
 import { toaster } from "../ui/toaster";
+import TokenManager from "../../utils/tokenManager";
 
 interface FormValues {
   username: string;
@@ -19,6 +20,10 @@ interface LoginPageProps {
 const LoginPage = ({ setIsAuth }: LoginPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const from = location.state?.from?.pathname || "/market";
+
   const {
     register,
     handleSubmit,
@@ -28,7 +33,8 @@ const LoginPage = ({ setIsAuth }: LoginPageProps) => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       setIsLoading(true);
-      // Make API call to login endpoint
+      
+      // Make API call to login endpoint - REMOVED credentials: "include"
       const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: "POST",
         headers: {
@@ -38,42 +44,39 @@ const LoginPage = ({ setIsAuth }: LoginPageProps) => {
           username: data.username,
           password: data.password,
         }),
-        credentials: "include", // Needed for cookies if your API uses sessions
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        toaster.create({
-          type: "error",
-          title: "Login Failed",
-          description: errorData.message || "An error occurred during login.",
-        });
         throw new Error(errorData.message || "Login failed");
       }
 
       const responseData = await response.json();
       console.log("Login successful:", responseData);
 
-      // Store user data in sessionStorage
-      console.log(responseData);
-      sessionStorage.setItem("user", JSON.stringify(responseData.user));
-      sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
+      // Store JWT token and user data using TokenManager
+      TokenManager.setToken(responseData.access_token);
+      TokenManager.setUser(responseData.user);
+      
+      // Update authentication state
+      setIsAuth(true);
+      
+      toaster.create({
+        type: "success",
+        title: "Login Successful",
+        description: "Welcome back! Redirecting to your dashboard...",
+      });
 
       setTimeout(() => {
-        navigate("/market");
-        setIsAuth(true);
-        toaster.create({
-          type: "success",
-          title: "Login Successful",
-          description: "Welcome back! Redirecting to your dashboard...",
-        });
+        navigate(from, { replace: true });
       }, 1000);
-    } catch (error) {
+      
+    } catch (error: any) {
       console.error("Login error:", error);
       toaster.create({
         type: "error",
-        title: "Login Error",
-        description: "An unexpected error occurred.",
+        title: "Login Failed",
+        description: error.message || "An error occurred during login.",
       });
     } finally {
       setIsLoading(false);

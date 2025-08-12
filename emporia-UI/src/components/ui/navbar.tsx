@@ -16,6 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toaster } from "./toaster";
 import { FiShoppingCart, FiHome, FiGrid, FiPackage } from "react-icons/fi";
 import { useEffect, useState } from "react";
+import TokenManager from "../../utils/tokenManager";
 
 export const Navbar = ({
   isAuthenticated,
@@ -26,64 +27,81 @@ export const Navbar = ({
 }) => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState(0);
-  const [user, setUser] = useState<{ first_name: string; last_name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ 
+    first_name: string; 
+    last_name: string; 
+    email: string; 
+    role: string;
+    user_name: string;
+  } | null>(null);
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    const user = sessionStorage.getItem("user");
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-    let userId;
-
-    if (user) {
-      const userObject = JSON.parse(user);
-      userId = userObject.id;
-    } else {
-      setCartItems(0);
-      return;
-    }
     const fetchCartData = async () => {
       try {
-        const response = await fetch(`${API_URL}/cart/${userId}`, {
-          credentials: "include",
+        // Updated: Use JWT token instead of credentials
+        const response = await fetch(`${API_URL}/cart/`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...TokenManager.getAuthHeader(),
+          },
         });
         if (response.ok) {
           const data = await response.json();
-          const total = data.cart.items.reduce((accumulator, item) => accumulator + item.quantity, 0);
-          setCartItems(total);
+          setCartItems(data.cart.total_items || 0);
+        } else if (response.status === 401) {
+          // Token expired, logout user
+          TokenManager.removeToken();
+          setIsAuth(false);
+          navigate('/login');
         }
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
     };
 
-    fetchCartData();
-  }, [isAuthenticated, API_URL]);
+    if (isAuthenticated) {
+      // Updated: Get user data from TokenManager instead of sessionStorage
+      const userData = TokenManager.getUser();
+      if (userData) {
+        setUser(userData);
+        // Only fetch cart for customers
+        if (userData.role === 'customer') {
+          fetchCartData();
+        }
+      }
+    } else {
+      setUser(null);
+      setCartItems(0);
+    }
+  }, [isAuthenticated, API_URL, setIsAuth, navigate]);
 
   const handleLogout = async () => {
-    setTimeout(async () => {
-      try {
-        await fetch(`${API_URL}/auth/logout`, {
-          method: "POST",
-          credentials: "include",
-        });
-      } catch (error) {
-        console.error("Logout error:", error);
-      }
-      sessionStorage.setItem("isAuthenticated", "false");
-      setIsAuth(false);
-      toaster.create({
-        type: "success",
-        title: "Logout Successful",
-        description: "You have been logged out successfully.",
+    try {
+      // Updated: Use JWT token for logout instead of credentials
+      await fetch(`${API_URL}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          ...TokenManager.getAuthHeader(),
+        },
       });
-    }, 1000);
-    navigate("/market");
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
+    // Updated: Clear JWT token instead of sessionStorage
+    TokenManager.removeToken();
+    setIsAuth(false);
+    setUser(null);
+    setCartItems(0);
+    
+    toaster.create({
+      type: "success",
+      title: "Logout Successful",
+      description: "You have been logged out successfully.",
+    });
+    navigate("/");
   };
 
   return (
@@ -99,33 +117,49 @@ export const Navbar = ({
           </Link>
           <HStack gap={4}>
             {isAuthenticated ? (
-              // Authenticated Navbar
+              // Authenticated Navbar with Role-based Navigation
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                {/* Market - Available to all authenticated users */}
                 <Link to="/market">
                   <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
                     <FiHome style={{ marginRight: "8px" }} /> Market
                   </Button>
                 </Link>
-                <Link to="/categories">
-                  <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
-                    <FiGrid style={{ marginRight: "8px" }} /> Categories
-                  </Button>
-                </Link>
-                <Link to="/products">
-                  <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
-                    <FiPackage style={{ marginRight: "8px" }} /> Products
-                  </Button>
-                </Link>
-                <Link to="/cart">
-                  <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }} position="relative">
-                    <Float placement={"top-end"}>
-                      <Circle size="5" bg="red" color="white">
-                        <Center>{cartItems}</Center>
-                      </Circle>
-                    </Float>
-                    <FiShoppingCart size={20} style={{ marginRight: "8px" }} /> Cart
-                  </Button>
-                </Link>
+                
+                {/* Admin Only - Categories */}
+                {user?.role === 'admin' && (
+                  <Link to="/categories">
+                    <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
+                      <FiGrid style={{ marginRight: "8px" }} /> Categories
+                    </Button>
+                  </Link>
+                )}
+                
+                {/* Seller Only - Products */}
+                {user?.role === 'seller' && (
+                  <Link to="/products">
+                    <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }}>
+                      <FiPackage style={{ marginRight: "8px" }} /> My Products
+                    </Button>
+                  </Link>
+                )}
+                
+                {/* Customer Only - Cart */}
+                {user?.role === 'customer' && (
+                  <Link to="/cart">
+                    <Button variant="ghost" color="white" _hover={{ bg: "whiteAlpha.200" }} position="relative">
+                      {cartItems > 0 && (
+                        <Float placement={"top-end"}>
+                          <Circle size="5" bg="red" color="white">
+                            <Center>{cartItems}</Center>
+                          </Circle>
+                        </Float>
+                      )}
+                      <FiShoppingCart size={20} style={{ marginRight: "8px" }} /> Cart
+                    </Button>
+                  </Link>
+                )}
+                
                 <Menu.Root>
                   <Menu.Trigger>
                     <HStack>
@@ -145,9 +179,20 @@ export const Navbar = ({
                   <Portal>
                     <Menu.Positioner>
                       <Menu.Content bg="gray.800" borderColor="gray.700">
-                        <Menu.Item value="orders" _hover={{ bg: "gray.700" }} onClick={() => navigate("/orders")}>
-                          <Text color="white">Order History</Text>
-                        </Menu.Item>
+                        {/* Customer Only - Order History */}
+                        {user?.role === 'customer' && (
+                          <Menu.Item value="orders" _hover={{ bg: "gray.700" }} onClick={() => navigate("/orders")}>
+                            <Text color="white">Order History</Text>
+                          </Menu.Item>
+                        )}
+                        
+                        {/* Customer Only - Place Order */}
+                        {user?.role === 'customer' && cartItems > 0 && (
+                          <Menu.Item value="place-order" _hover={{ bg: "gray.700" }} onClick={() => navigate("/place-order")}>
+                            <Text color="white">Place Order</Text>
+                          </Menu.Item>
+                        )}
+                        
                         <Menu.Item value="profile" _hover={{ bg: "gray.700" }}>
                           <Text color="white">Profile</Text>
                         </Menu.Item>

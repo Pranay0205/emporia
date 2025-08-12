@@ -5,6 +5,7 @@ A full-stack e-commerce platform built with Python Flask backend and React TypeS
 ## 🚀 Features
 
 ### Core Functionality
+
 - **User Management**: Registration and authentication for customers, sellers, and admins
 - **Product Catalog**: Browse products by category with filtering and search
 - **Shopping Cart**: Add, update, and remove items from cart
@@ -12,11 +13,13 @@ A full-stack e-commerce platform built with Python Flask backend and React TypeS
 - **Order History**: Track and manage order status
 
 ### User Roles
+
 - **Customers**: Browse products, manage cart, place orders
 - **Sellers**: Manage product listings, view sales
 - **Admins**: System administration and user management
 
 ### Architecture Patterns
+
 - **Factory Pattern**: User creation with UserFactory
 - **Command Pattern**: Order processing with command invoker
 - **Repository Pattern**: Data access abstraction
@@ -25,12 +28,14 @@ A full-stack e-commerce platform built with Python Flask backend and React TypeS
 ## 🛠️ Tech Stack
 
 ### Backend
+
 - **Framework**: Flask (Python)
 - **Database**: MySQL
 - **Authentication**: Session-based with password hashing
 - **Architecture**: Layered architecture with repositories and services
 
 ### Frontend
+
 - **Framework**: React 19 with TypeScript
 - **Styling**: Chakra UI + Tailwind CSS
 - **Routing**: React Router DOM
@@ -67,6 +72,7 @@ emporia/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Python 3.8+
 - Node.js 18+
 - MySQL 8.0+
@@ -75,39 +81,44 @@ emporia/
 ### Backend Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd emporia
    ```
 
 2. **Set up Python virtual environment**
+
    ```bash
    cd emporia-api
    python -m venv venv
-   
+
    # Windows
    venv\Scripts\activate
-   
+
    # macOS/Linux
    source venv/bin/activate
    ```
 
 3. **Install Python dependencies**
+
    ```bash
    pip install flask flask-cors mysql-connector-python configparser
    ```
 
 4. **Database Setup**
+
    ```bash
    # Create MySQL database
    mysql -u root -p
    CREATE DATABASE EMPORIA_DB;
-   
+
    # Run table creation script
    mysql -u root -p EMPORIA_DB < database-scripts/table_creation_script.sql
    ```
 
 5. **Configure database connection**
+
    ```bash
    # Create configs/config.ini
    mkdir configs
@@ -117,7 +128,7 @@ emporia/
    user = your_mysql_username
    password = your_mysql_password
    database = EMPORIA_DB
-   
+
    [server]
    secret_key = your_secret_key_here
    EOF
@@ -132,16 +143,19 @@ emporia/
 ### Frontend Setup
 
 1. **Navigate to frontend directory**
+
    ```bash
    cd emporia-UI
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    # Create .env file
    echo "VITE_API_URL=http://localhost:5000" > .env
@@ -156,6 +170,7 @@ emporia/
 ## 🗄️ Database Schema
 
 ### Core Tables
+
 - **users**: Base user information
 - **customers**: Customer-specific data
 - **sellers**: Seller store information
@@ -170,11 +185,13 @@ emporia/
 ## 🔗 API Endpoints
 
 ### Authentication
+
 - `POST /auth/register` - User registration
 - `POST /auth/login` - User login
 - `POST /auth/logout` - User logout
 
 ### Products
+
 - `GET /products` - Get all products
 - `GET /products/{id}` - Get product by ID
 - `POST /products` - Create product (sellers only)
@@ -182,18 +199,21 @@ emporia/
 - `DELETE /products/{id}` - Delete product
 
 ### Categories
+
 - `GET /categories` - Get all categories
 - `POST /categories` - Create category
 - `PUT /categories/{id}` - Update category
 - `DELETE /categories/{id}` - Delete category
 
 ### Cart
+
 - `GET /cart` - Get user's cart
 - `POST /cart/items` - Add item to cart
 - `PUT /cart/items/{product_id}` - Update cart item
 - `DELETE /cart/items/{product_id}` - Remove from cart
 
 ### Orders
+
 - `POST /orders` - Place order
 - `GET /orders` - Get user's orders
 - `GET /orders/{id}` - Get specific order
@@ -202,6 +222,7 @@ emporia/
 ## 🔐 Authentication
 
 The application uses session-based authentication with:
+
 - Password hashing using SHA-256
 - Role-based access control
 - Session management for maintaining login state
@@ -209,6 +230,7 @@ The application uses session-based authentication with:
 ## 🎨 Frontend Features
 
 ### Pages
+
 - **Landing Page**: Welcome page with feature highlights
 - **Registration**: Multi-role user registration
 - **Login**: User authentication
@@ -219,6 +241,7 @@ The application uses session-based authentication with:
 - **Categories**: Category management (admins only)
 
 ### UI Components
+
 - Responsive design with Chakra UI
 - Dark theme with glassmorphism effects
 - Interactive animations and hover effects
@@ -228,6 +251,7 @@ The application uses session-based authentication with:
 ## 🔧 Development
 
 ### Running Tests
+
 ```bash
 # Backend tests
 cd emporia-api
@@ -239,6 +263,7 @@ npm test
 ```
 
 ### Code Formatting
+
 ```bash
 # Frontend
 npm run lint
@@ -247,6 +272,7 @@ npm run lint
 ## 🚀 Deployment
 
 ### Backend Deployment
+
 1. Set up production database
 2. Configure production settings in `config.ini`
 3. Use a WSGI server like Gunicorn:
@@ -256,6 +282,7 @@ npm run lint
    ```
 
 ### Frontend Deployment
+
 1. Build the production bundle:
    ```bash
    npm run build
@@ -297,11 +324,5 @@ This project is licensed under the MIT License.
 - [ ] Inventory management dashboard
 - [ ] Analytics and reporting
 - [ ] Mobile responsive improvements
-
-## 📞 Support
-
-For support and questions, please open an issue in the repository or contact the development team.
-
----
 
 **Emporia** - Your One-Stop Shopping Platform

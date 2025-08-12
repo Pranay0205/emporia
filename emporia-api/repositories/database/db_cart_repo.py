@@ -1,4 +1,5 @@
 # emporia-api/repositories/database/db_cart_repo.py
+from flask import g
 from repositories.interfaces.cart_repo import CartRepository
 from models.Order.ShoppingCart import ShoppingCart
 from models.Order.CartItem import CartItem

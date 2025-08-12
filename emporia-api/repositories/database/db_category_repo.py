@@ -1,3 +1,4 @@
+from flask import g
 from repositories.interfaces.category_repo import CategoryRepository
 import mysql.connector
 from models.Product.Category import Category

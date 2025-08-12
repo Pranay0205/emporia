@@ -1,31 +1,20 @@
-from flask import Blueprint, current_app, request, jsonify, session
+from flask import Blueprint, current_app, request, jsonify
+from utils.auth_decorators import token_required, role_required
 
 cart_bp = Blueprint('cart', __name__, url_prefix='/cart')
 
 
-@cart_bp.route('/<user_id>', methods=['GET'])
-def get_cart(user_id):
+@cart_bp.route('/', methods=['GET'], strict_slashes=False)
+@role_required('customer')
+def get_cart():
     """Get the current user's shopping cart"""
     try:
-        print(f"Fetching cart for user ID: {user_id}")
-        user = current_app.user_service.get_user_by_user_id(user_id)
-
-        print(f"Fetching cart for customer ID: {user.customer_id}")
-
-        if not user.customer_id:
-
-            return jsonify({
-                'cart': {
-                    'cart_id': None,
-                    'customer_id': None,
-                    'items': [],
-                    'total_items': 0,
-                    'total_price': 0
-                }
-            }), 200
-
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 401
+        
         # Get or create cart
-        cart = current_app.cart_service.get_or_create_cart(user.customer_id)
+        cart = current_app.cart_service.get_or_create_cart(customer_id)
 
         return jsonify({
             'cart': {
@@ -46,37 +35,47 @@ def get_cart(user_id):
         return jsonify({'message': f'Error retrieving cart: {str(e)}'}), 500
 
 
-@cart_bp.route('/items', methods=['POST'])
+@cart_bp.route('/items', methods=['POST'], strict_slashes=False)
+@role_required('customer')
 def add_to_cart():
+    """Add an item to the shopping cart"""
     try:
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 401
 
-        data = request.get_json()
+        # --- MORE DEBUGGING ADDED ---
+        # Print the raw request body to the server console to see exactly what is being sent.
+        raw_data = request.data
+        print(f"DEBUG: Raw request data received: {raw_data}")
 
+        # Use force=True to bypass potential mimetype/header issues during JSON parsing.
+        data = request.get_json(force=True)
+        print(f"DEBUG: Parsed JSON data: {data}")
+        
         if not data:
-            return jsonify({'message': 'No data provided'}), 400
+            return jsonify({'message': 'No JSON data provided in the request body'}), 400
 
         product_id = data.get('product_id')
         quantity = data.get('quantity', 1)
-        user_id = data.get('user_id')
+        
+        # A more robust check to see if the key is missing
+        if product_id is None:
+            return jsonify({
+                'message': '[Debug] "product_id" key is missing or null in the request body.',
+                'received_data': data,
+                'raw_data_decoded': raw_data.decode('utf-8') # Return the raw data in the error response
+            }), 400
 
-        if not product_id:
-            return jsonify({'message': 'Product ID is required'}), 400
+        # Get or create cart for the authenticated customer
+        cart = current_app.cart_service.get_or_create_cart(customer_id)
 
-        print(
-            f"Adding product {product_id} with quantity {quantity} to cart for user {user_id}")
-
-        user = current_app.user_service.get_user_by_user_id(user_id)
-
-        print(f"User fetched: {user}")
-        # Get or create cart
-        cart = current_app.cart_service.get_or_create_cart(user.customer_id)
-
-        # Add item to cart
+        # Add item to cart using the service
         updated_cart = current_app.cart_service.add_item(
             cart.cart_id,
             product_id,
             quantity,
-            user.customer_id
+            customer_id
         )
 
         return jsonify({
@@ -101,24 +100,22 @@ def add_to_cart():
         return jsonify({'message': f'Error adding item to cart: {str(e)}'}), 500
 
 
-@cart_bp.route('/items/<int:product_id>', methods=['PUT'])
+@cart_bp.route('/items/<int:product_id>', methods=['PUT'], strict_slashes=False)
+@role_required('customer')
 def update_cart_item(product_id):
     """Update an item's quantity in the shopping cart"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 401
 
         data = request.get_json()
         if not data:
             return jsonify({'message': 'No data provided'}), 400
 
         quantity = data.get('quantity')
-
         if quantity is None:
             return jsonify({'message': 'Quantity is required'}), 400
-
-        customer_id = session.get('customer_id')
 
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
@@ -153,15 +150,14 @@ def update_cart_item(product_id):
         return jsonify({'message': f'Error updating cart item: {str(e)}'}), 500
 
 
-@cart_bp.route('/items/<int:product_id>', methods=['DELETE'])
+@cart_bp.route('/items/<int:product_id>', methods=['DELETE'], strict_slashes=False)
+@role_required('customer')
 def remove_from_cart(product_id):
-
+    """Remove an item from the shopping cart"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        customer_id = session.get('customer_id')
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 401
 
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)
@@ -195,15 +191,14 @@ def remove_from_cart(product_id):
         return jsonify({'message': f'Error removing item from cart: {str(e)}'}), 500
 
 
-@cart_bp.route('/', methods=['DELETE'])
+@cart_bp.route('/', methods=['DELETE'], strict_slashes=False)
+@role_required('customer')
 def clear_cart():
-
+    """Clear all items from the shopping cart"""
     try:
-        # Check if user is authenticated
-        if not session.get('is_authenticated'):
-            return jsonify({'message': 'Authentication required'}), 401
-
-        customer_id = session.get('customer_id')
+        customer_id = request.current_user.get('customer_id')
+        if not customer_id:
+            return jsonify({'message': 'Customer ID not found'}), 401
 
         # Get cart
         cart = current_app.cart_service.get_or_create_cart(customer_id)

@@ -1,10 +1,11 @@
-from flask import Blueprint, current_app, request, jsonify, session
+from flask import Blueprint, current_app, request, jsonify
+from utils.auth_decorators import token_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-
-@auth_bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'], strict_slashes=False)
 def register():
+    """User registration"""
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No data provided'}), 400
@@ -16,34 +17,45 @@ def register():
     except Exception as e:
         return jsonify({'message': 'Registration failed'}), 500
 
-
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST'], strict_slashes=False)
 def login():
-    """User login"""
+    """User login with JWT token"""
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No data provided'}), 400
+    
     try:
-        is_authenticated, user = current_app.user_service.authenticate_user(
-            data["username"], data["password"])
-
-        print(f"User authenticated: {user}")
+        is_authenticated, auth_data = current_app.user_service.authenticate_user(
+            data.get("username"), 
+            data.get("password")
+        )
+        
         if not is_authenticated:
-            raise ValueError("Invalid username or password")
-        if not session.get('is_authenticated'):
-            raise ValueError("Session failed to initialize")
-        return jsonify({'message': 'Login successful', 'user': user}), 200
+            return jsonify({'message': 'Authentication failed'}), 401
+            
+        return jsonify({
+            'message': 'Login successful',
+            'access_token': auth_data['access_token'],
+            'token_type': auth_data['token_type'],
+            'user': auth_data['user']
+        }), 200
+        
     except ValueError as e:
         return jsonify({'message': str(e)}), 401
     except Exception as e:
-        return jsonify({'message': 'Login failed',
-                        'error': str(e)}), 500
+        return jsonify({'message': 'Login failed', 'error': str(e)}), 500
 
-
-@auth_bp.route('/logout', methods=['POST'])  # User logout
+@auth_bp.route('/logout', methods=['POST'])
+@token_required
 def logout():
-    """User logout"""
-    print("Session before clearing:", session)
-    session.clear()
+    """User logout (token invalidation handled client-side)"""
     return jsonify({'message': 'Logout successful'}), 200
-# write a test case for the register function
+
+@auth_bp.route('/verify-token', methods=['GET'])
+@token_required
+def verify_token():
+    """Verify if token is valid"""
+    return jsonify({
+        'message': 'Token is valid',
+        'user': request.current_user
+    }), 200

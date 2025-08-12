@@ -1,23 +1,23 @@
+from flask import g
 from repositories.interfaces.user_repo import UserRepository
 import mysql.connector
-
 
 class DBUserRepo(UserRepository):
     def __init__(self, db):
         super().__init__(db)
         self.connection = db.connection
         self.cursor = db.cursor
-
-    def create(self, user):
+        
+    def create(self, user):    
         try:
             self.cursor.execute("""
                 INSERT INTO users (username, first_name, last_name, email, password, role)
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (user.user_name, user.first_name, user.last_name,
+            """, (user.user_name, user.first_name, user.last_name, 
                   user.email, user.password, user.role))
-
+            
             user.id = self.cursor.lastrowid
-
+            
             # Handle role-specific data
             if user.role == 'customer':
                 self.cursor.execute("""
@@ -25,45 +25,42 @@ class DBUserRepo(UserRepository):
                     VALUES (%s, %s, %s)
                 """, (user.id, user.address, user.phone_number))  # Use user_id, not user.id
                 user.customer_id = self.cursor.lastrowid
-
+            
             elif user.role == 'seller':
                 self.cursor.execute("""
                     INSERT INTO sellers (user_id, store_name, store_desc)
                     VALUES (%s, %s, %s)
                 """, (user.id, user.store_name, user.store_desc))  # Use user_id, not user.id
-
+                
                 user.seller_id = self.cursor.lastrowid
-
+                
             elif user.role == 'admin':
                 # Convert permissions list to string if it's a list
-                permissions_str = ','.join(user.permissions) if isinstance(
-                    user.permissions, list) else user.permissions
-
+                permissions_str = ','.join(user.permissions) if isinstance(user.permissions, list) else user.permissions
+                
                 self.cursor.execute("""
                     INSERT INTO admins (user_id, permissions)
                     VALUES (%s, %s)
                 """, (user.id, permissions_str))  # Use user_id, not user.id
-
+                
                 user.admin_id = self.cursor.lastrowid
-
+                    
             self.connection.commit()
-
+            
             print(f"{user.first_name} has joined the {user.role} community!")
-
+            
             return user
-
+        
         except mysql.connector.Error as err:
             # Rollback the transaction
             self.connection.rollback()
-
+            
             # Handle specific MySQL errors
             if err.errno == 1062:  # Duplicate entry error
                 if "username" in str(err):
-                    raise ValueError(
-                        f"Username '{user.user_name}' is already taken")
+                    raise ValueError(f"Username '{user.user_name}' is already taken")
                 elif "email" in str(err):
-                    raise ValueError(
-                        f"Email '{user.email}' is already registered")
+                    raise ValueError(f"Email '{user.email}' is already registered")
                 else:
                     raise ValueError(f"Duplicate entry: {err}")
             elif err.errno == 1452:  # Foreign key constraint fails
@@ -76,13 +73,14 @@ class DBUserRepo(UserRepository):
                 # Log the error for debugging
                 print(f"MySQL Error: {err.errno} - {err.msg}")
                 raise ValueError(f"Database error: {err}")
-
+                
         except Exception as e:
             # Handle other exceptions
             self.connection.rollback()
             print(f"Unexpected error: {e}")
             raise Exception(f"User creation failed: {e}")
-
+        
+    
     def get_all_users(self, limit=100, offset=0):
         try:
             self.cursor.execute("""
@@ -90,14 +88,14 @@ class DBUserRepo(UserRepository):
                 FROM users
                 LIMIT %s OFFSET %s
             """, (limit, offset))
-
+            
             users = self.cursor.fetchall()
             print(f"Fetched {len(users)} users from the database.")
-
+                            
             return users
         except Exception as e:
             raise ValueError(f"Error fetching users: {e}")
-
+        
     def get_user_by_username(self, username):
         try:
             self.cursor.execute("""
@@ -105,9 +103,9 @@ class DBUserRepo(UserRepository):
                 FROM users 
                 WHERE username = %s
             """, (username,))
-
+            
             user = self.cursor.fetchone()
-
+            
             if user:
                 print(f"User {username} found in the database.")
                 return user
@@ -116,7 +114,7 @@ class DBUserRepo(UserRepository):
                 return None
         except Exception as e:
             raise ValueError(f"Error fetching user by username: {e}")
-
+    
     def get_seller_by_username(self, userid):
         try:
             self.cursor.execute("""
@@ -124,9 +122,9 @@ class DBUserRepo(UserRepository):
                 FROM sellers 
                 WHERE user_id = %s
             """, (userid,))
-
+            
             user = self.cursor.fetchone()
-
+            
             if user:
                 print(f"User {userid} found in the database.")
                 return user
@@ -135,7 +133,7 @@ class DBUserRepo(UserRepository):
                 return None
         except Exception as e:
             raise ValueError(f"Error fetching seller by userid: {e}")
-
+        
     def get_admin_by_username(self, userid):
         try:
             self.cursor.execute("""
@@ -143,9 +141,10 @@ class DBUserRepo(UserRepository):
                 FROM admins 
                 WHERE user_id = %s
             """, (userid,))
-
+            
             user = self.cursor.fetchone()
-
+            
+            
             if user:
                 print(f"User {userid} found in the database.")
                 return user
@@ -154,18 +153,18 @@ class DBUserRepo(UserRepository):
                 return None
         except Exception as e:
             raise ValueError(f"Error fetching user by userid: {e}")
-
+        
     def get_customer_by_username(self, userid):
-        print(f"Fetching customer by user ID: {userid}")
         try:
             self.cursor.execute("""
-                SELECT *
+                SELECT customer_id, address, phone_number
                 FROM customers 
                 WHERE user_id = %s
             """, (userid,))
-
+            
             user = self.cursor.fetchone()
-
+            
+            
             if user:
                 print(f"User {userid} found in the database.")
                 return user
@@ -174,22 +173,62 @@ class DBUserRepo(UserRepository):
                 return None
         except Exception as e:
             raise ValueError(f"Error fetching user by userid: {e}")
-
-    def get_by_id(self, user_id):
+        
+    def get_seller_by_user_id(self, user_id):
         try:
+            print(f"Retrieving seller for user ID: {user_id}")
+            self.cursor.execute("""
+                SELECT seller_id, store_name, store_desc
+                FROM sellers 
+                WHERE user_id = %s
+            """, (user_id,))
+            user = self.cursor.fetchone()
+
+            if user:
+                print(f"Seller with user ID {user_id} found in the database.")
+                return user
+            
+        except Exception as e:
+            raise ValueError(f"Error fetching seller by user ID: {e}")
+        
+    def get_user_by_id(self, user_id):
+        try:
+         
             self.cursor.execute("""
                 SELECT id, username, first_name, last_name, email, password, role 
                 FROM users 
                 WHERE id = %s
             """, (user_id,))
-
+            
             user = self.cursor.fetchone()
-
+            
             if user:
-                print(f"User with ID {user_id} found in the database.")
+                print(f"User {user_id} found in the database.")
                 return user
             else:
-                print(f"User with ID {user_id} not found in the database.")
+                print(f"User {user_id} not found in the database.")
                 return None
         except Exception as e:
-            raise ValueError(f"Error fetching user by ID: {e}")
+            raise ValueError(f"Error fetching user by username: {e}")
+    
+    def get_seller_by_seller_id(self, seller_id):
+        try:
+            print(f"Retrieving seller for selleralskdjasli; jdois ID: {seller_id}")
+            self.cursor.execute("""
+                SELECT seller_id, store_name, store_desc, user_id
+                FROM sellers 
+                WHERE seller_id = %s
+            """, (seller_id,))
+            
+            seller = self.cursor.fetchone()
+            
+            if seller:
+                print(f"Seller with ID {seller_id} found in the database.")
+                return seller
+            else:
+                print(f"Seller with ID {seller_id} not found in the database.")
+                return None
+        except Exception as e:
+            raise ValueError(f"Error fetching seller by seller ID: {e}")
+        
+  

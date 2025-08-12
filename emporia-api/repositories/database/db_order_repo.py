@@ -1,4 +1,5 @@
 # emporia-api/repositories/database/db_order_repo.py
+from flask import g
 from repositories.interfaces.order_repo import OrderRepository
 import mysql.connector
 from models.Order.Order import Order
