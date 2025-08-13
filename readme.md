@@ -324,5 +324,3 @@ This project is licensed under the MIT License.
 - [ ] Inventory management dashboard
 - [ ] Analytics and reporting
 - [ ] Mobile responsive improvements
-
-**Emporia** - Your One-Stop Shopping Platform
